@@ -4,22 +4,19 @@
 import { useChat } from "ai/react";
 import { useEffect, useState } from "react";
 import { FaMicrophone } from "react-icons/fa";
-import SpeechRecognitionComponent from "./component/SpeechRecognitionComponent";
+import SpeechRecognitionComponent from "../component/SpeechRecognitionComponent";
 
 
 export default function Chat() {
-    const options = {
-        api: "api/test"
-       };
-    const { messages, input, handleInputChange, handleSubmit } = useChat(options);
+    const { messages, input, handleInputChange, handleSubmit ,setInput} = useChat();
     const [voice, setVoice] = useState(null);
 
 
-    // const handleTranscriptUpdate = (transcript) => {
-    //     setInput(transcript); // Utilisez setInput fourni par useChat pour mettre à jour l'input directement
-    //     console.log(input)
-    // };
+    const handleTranscriptUpdate = (transcript) => {
+        setInput(transcript); // Utilisez setInput fourni par useChat pour mettre à jour l'input directement
+    };
 
+    
 
     return (
         <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
@@ -40,14 +37,14 @@ export default function Chat() {
             <div className="fixed flex items-center mb-8 bottom-0 w-full max-w-md">
                 <form onSubmit={handleSubmit} className="flex-grow">
                     <input
-                        className="w-[300px] p-2  border border-gray-300 rounded shadow-xl"
+                        className="w-[95%] p-2  border border-gray-300 rounded shadow-xl"
                         value={input}
                         placeholder="dite quelque chose"
                         onChange={handleInputChange}
                     />
 
                 </form>
-                {/* <SpeechRecognitionComponent onTranscriptUpdate={handleTranscriptUpdate} /> */}
+                <SpeechRecognitionComponent onTranscriptUpdate={handleTranscriptUpdate} />
             </div>
         </div>
     );
