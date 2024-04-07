@@ -9,7 +9,7 @@ import SpeechRecognitionComponent from "./component/SpeechRecognitionComponent";
 
 export default function Chat() {
     const options = {
-        api: "api/test"
+        api: `${process.env.NEXT_PUBLIC_BASE_API_URL}/api/test`
        };
     const { messages, input, handleInputChange, handleSubmit } = useChat(options);
     const [voice, setVoice] = useState(null);
