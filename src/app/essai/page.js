@@ -4,26 +4,24 @@
 import { useChat } from "ai/react";
 import { useEffect, useState } from "react";
 import { FaMicrophone } from "react-icons/fa";
-import SpeechRecognitionComponent from "./component/SpeechRecognitionComponent";
-import Navbar from "./component/navBar";
+import SpeechRecognitionComponent from "../component/SpeechRecognitionComponent";
 
 
 export default function Chat() {
     const options = {
-        api: `${process.env.NEXT_PUBLIC_BASE_API_URL}/api/test`
-    };
-    const { messages, input, handleInputChange, handleSubmit } = useChat(options);
+        api: `${process.env.NEXT_PUBLIC_BASE_API_URL}/api/testollama`
+       };
+    const { messages, input, handleInputChange, handleSubmit ,setInput} = useChat(options);
     const [voice, setVoice] = useState(null);
 
 
-    // const handleTranscriptUpdate = (transcript) => {
-    //     setInput(transcript); // Utilisez setInput fourni par useChat pour mettre à jour l'input directement
-    //     console.log(input)
-    // };
+    const handleTranscriptUpdate = (transcript) => {
+        setInput(transcript); // Utilisez setInput fourni par useChat pour mettre à jour l'input directement
+    };
 
+    
 
-    return (<>
-        <Navbar />
+    return (
         <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
 
             {messages.map((message) => (
@@ -38,21 +36,19 @@ export default function Chat() {
                     <br />
                 </div>
             ))}
-             </div>
 
-            <div className="fixed flex items-center  mb-8 bottom-0 w-full">
-                <form onSubmit={handleSubmit} className="flex-grow flex justify-center">
+            <div className="fixed flex items-center mb-8 bottom-0 w-full max-w-md">
+                <form onSubmit={handleSubmit} className="flex-grow">
                     <input
-                        className="w-[300px] p-2  border border-gray-300 rounded shadow-xl"
+                        className="w-[95%] p-2  border border-gray-300 rounded shadow-xl"
                         value={input}
                         placeholder="dite quelque chose"
                         onChange={handleInputChange}
                     />
 
                 </form>
-                {/* <SpeechRecognitionComponent onTranscriptUpdate={handleTranscriptUpdate} /> */}
-           
+                <SpeechRecognitionComponent onTranscriptUpdate={handleTranscriptUpdate} />
+            </div>
         </div>
-    </>
     );
 }

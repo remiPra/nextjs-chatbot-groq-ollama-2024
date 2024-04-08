@@ -19,11 +19,14 @@ export async function POST(req) {
     const llm = new ChatGroq({
         apiKey: process.env.REACT_APP_GROQ_API_KEY,
     });
-    const template = `You are a nice girlfriend sarah having a conversation with your lover.
 
-Previous conversation:
+    const template = `
+  <task> answer like a human </task>
+    <context>adopt the role of  a nice girlfriend sarah having a conversation with your lover.</context>
+
+        <context>Previous conversation:
 {chat_history}
-
+</context>
 New human question: {question}
 Response:`;
     const prompt = PromptTemplate.fromTemplate(template);

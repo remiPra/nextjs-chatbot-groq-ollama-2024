@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@langchain/groq": "^0.0.4",
+    "@langchain/openai": "^0.0.26",
     "@modelfusion/vercel-ai": "^1.1.0",
     "ai": "^3.0.13",
     "langchain": "^0.1.30",
