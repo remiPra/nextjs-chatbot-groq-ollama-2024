@@ -4,7 +4,7 @@
 import { useChat } from "ai/react";
 import { useEffect, useState } from "react";
 import { FaMicrophone } from "react-icons/fa";
-import SpeechRecognitionComponent from "./component/SpeechRecognitionComponent";
+// import SpeechRecognitionComponent from "../SpeechRecognitionComponent";
 
 
 export default function Chat() {

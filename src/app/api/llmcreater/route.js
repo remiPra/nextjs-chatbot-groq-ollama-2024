@@ -26,7 +26,7 @@ export async function POST(req) {
     console.log(index)
     if(index==0){
 
-        template = `adopt the role of god , you know everything about everything , 
+        template = `adopt the role of my girlfriend , 
         
         Previous conversation:
         {chat_history}
@@ -35,11 +35,12 @@ export async function POST(req) {
         Response:`;
     } else if(index!=0) {
         template = `
-        adopt the role of god , you know everything about everything , continue the conversation , don't tell you continue , continue only ,
-Previous conversation for you have the context :
+        You are a nice girlfriend a conversation with a human.
+
+Previous conversation:
 {chat_history}
 
-New human question you answer very naturally: {question}
+New human question: {question}
 Response:`;
         
     }
@@ -77,11 +78,11 @@ Response:`;
     });
       console.log(messages[index].content)
     const res1 = await chain.invoke({ question: messages[index].content });
-    console.log(res1.response)
+
 
     index++;
 
-    return new Response(JSON.stringify(res1.response), {
+    return new Response(JSON.stringify(res1), {
         headers: {
             "Content-Type": "application/json",
         },

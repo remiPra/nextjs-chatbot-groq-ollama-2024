@@ -5,6 +5,7 @@ import { useChat } from "ai/react";
 import { useEffect, useState } from "react";
 import { FaMicrophone } from "react-icons/fa";
 import SpeechRecognitionComponent from "../component/SpeechRecognitionComponent";
+import TypingEffect from "../component/TypingEffect";
 
 
 export default function Chat() {
@@ -31,7 +32,7 @@ export default function Chat() {
                     style={{ color: message.role === "user" ? "black" : "green" }}
                 >
                     <strong>{`${message.role}: `}</strong>
-                    {message.content}
+                 {(message.content && message.role == "assistant") ?   <TypingEffect text={message.content} /> :  <>{message.content}</> }
                     <br />
                     <br />
                 </div>

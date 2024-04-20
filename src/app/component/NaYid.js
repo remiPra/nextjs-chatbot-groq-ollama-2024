@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 
-const Navbar = () => {
+const NaYid = () => {
   const [isFixed, setIsFixed] = useState(false);
 
   useEffect(() => {
@@ -19,11 +19,7 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`fixed w-full z-10 transition-all duration-300 ${
-        isFixed
-          ? 'bg-gray-800 text-white'
-          : 'bg-transparent text-gray-800'
-      }`}
+      className={`fixed top-0 left-0 w-full z-10 `}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
@@ -35,16 +31,16 @@ const Navbar = () => {
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-4">
               <Link
-                href="/"
+                href="/ollamafront"
                 className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
               >
-                Accueil
+                ollama
               </Link>
               <Link
-                href="/about"
+                href="/groqfront"
                 className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
               >
-                À propos
+                Groq
               </Link>
               <Link
                 href="/services"
@@ -66,4 +62,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar;
+export default NaYid;
