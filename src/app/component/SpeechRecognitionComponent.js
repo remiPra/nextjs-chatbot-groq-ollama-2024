@@ -4,14 +4,15 @@ import React, { useState, useEffect } from 'react';
 import { FaMicrophone } from "react-icons/fa";
 
 
-const SpeechRecognitionComponent = ({ onTranscriptUpdate }) => {
+const SpeechRecognitionComponent = ({ onTranscriptUpdate , language }) => {
   const [listening, setListening] = useState(false);
 
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (typeof SpeechRecognition !== "undefined") {
       const recognition = new SpeechRecognition();
-      recognition.lang = "en-US";
+      recognition.lang = language;
+      // recognition.lang = "en-US";
       recognition.continuous = true;
       recognition.interimResults = true;
 
@@ -37,8 +38,11 @@ const SpeechRecognitionComponent = ({ onTranscriptUpdate }) => {
 
   return (
     <div onClick={() => setListening(prevState => !prevState)}>
-      {listening ? <div className="flex justify-center items-center p-2 rounded-full bg-red-900 text-gray-100 focus:outline-none" ><FaMicrophone /></div> : 
-      <div className="flex justify-center items-center p-2 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none" ><FaMicrophone /></div> }
+      {listening ? <div className="flex justify-center  items-center p-2 rounded-full bg-red-900
+       text-gray-100 focus:outline-none" ><FaMicrophone size="8em" /></div> : 
+      <div className="flex justify-center items-center p-2 rounded-full bg-gray-200 
+      text-gray-700 hover:bg-gray-300 focus:outline-none" >
+        <FaMicrophone size='8em' /></div> }
     </div>
   );
 };
