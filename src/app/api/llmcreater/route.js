@@ -14,7 +14,6 @@ import { LLMChain } from "langchain/chains";
 
 let index = 0;
 
-let memory = new BufferMemory({ memoryKey: "chat_history" });
 export async function POST(req) {
     const { messages } = await req.json();
     const model = new ChatOllama({
@@ -24,59 +23,24 @@ export async function POST(req) {
 
     let template = ""
     console.log(index)
-    if(index==0){
 
-        template = `adopt the role of my girlfriend , 
+
+    template = ` , 
         
         Previous conversation:
         {chat_history}
         
         new human question  : {question}
         Response:`;
-    } else if(index!=0) {
-        template = `
-        You are a nice girlfriend a conversation with a human.
-
-Previous conversation:
-{chat_history}
-
-New human question: {question}
-Response:`;
-        
-    }
 
     const prompt = PromptTemplate.fromTemplate(template);
-
-
-    // const chatPrompt = ChatPromptTemplate.fromMessages([
-    //     ["system", "You are a nice chatbot having a conversation with a human."],
-    //     // The variable name here is what must align with memory
-    //     new MessagesPlaceholder("chat_history"),
-    //     ["human", "{question}"],
-    //   ]);
-    //   const chatPromptMemory = new BufferMemory({
-    //     memoryKey: "chat_history",
-    //     returnMessages: true,
-    //   });
-      
-
-    //   const chain = new LLMChain({
-    //     llm: model,
-    //     prompt: chatPrompt,
-    //     verbose: true,
-    //     memory: chatPromptMemory,
-    //   });
-
-
-
-
     const chain = new ConversationChain({
         llm: model,
         memory: memory,
         prompt: prompt,
         inputKey: "question"
     });
-      console.log(messages[index].content)
+    console.log(messages[index].content)
     const res1 = await chain.invoke({ question: messages[index].content });
 
 
