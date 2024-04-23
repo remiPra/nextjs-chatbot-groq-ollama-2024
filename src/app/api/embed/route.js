@@ -1,7 +1,6 @@
 import { ModelFusionTextStream, asChatMessages } from "@modelfusion/vercel-ai";
 import { Message, StreamingTextResponse } from "ai";
 import { ollama, streamText, embedMany, retrieve, VectorIndexRetriever } from "modelfusion";
-import { TextLoader } from "langchain/document_loaders/fs/text";
 
 export const runtime = "edge";
 
@@ -10,8 +9,7 @@ export async function POST(req) {
   console.log('Request Body:', requestBody);
 
   // Charger le fichier de texte à l'aide de TextLoader
-  const loader = new TextLoader(requestBody.fileText);
-  const docs = await loader.load();
+  const docs = requestBody.fileText; // Assurez-vous que c'est une chaîne de texte.
   console.log(docs);
 
   const { messages } = requestBody;
