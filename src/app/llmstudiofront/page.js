@@ -24,20 +24,25 @@ const Page = () => {
         setMessages(updatedMessages);
         setInput('');
         console.log(process.env)
-        const data = {
-          messages: updatedMessages,
-          model: 'mixtral-8x7b-32768',
-        };
+        const url = 'http://localhost:1234/v1/chat/completions';
 
-        const response = await axios.post('https://api.groq.com/openai/v1/chat/completions', data, {
+        const data = {
+            model: "lmstudio-community/Meta-Llama-3-8B-Instruct-GGUF/Meta-Llama-3-8B-Instruct-Q4_K_M.gguf",
+            messages: updatedMessages,
+            temperature: 0.7,
+            max_tokens: -1,
+            stream: false
+          };
+
+        const response = await axios.post(url, data, {
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_GROQ_API_KEY}`,
+           
           },
         });
-
+        console.log(response)
         const assistantMessage = response.data.choices[0].message.content;
-        setMessages((prevMessages) => [...prevMessages, { role: 'assistant', content: assistantMessage }]);
+        setMessages((prevMessages) => [...prevMessages, { role: 'system', content: assistantMessage }]);
       } catch (error) {
         console.error('Error:', error);
       }
@@ -68,6 +73,7 @@ const Page = () => {
             onChange={handleInputChange}
             onKeyPress={handleKeyPress}
           />
+          <button></button>
         </div>
       </div>
     </>

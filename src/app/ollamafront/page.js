@@ -13,7 +13,8 @@ const Chat = () => {
 
     try {
       const response = await axios.post('http://localhost:11434/api/chat', {
-        model: 'mistral',
+        // model: 'mistral',
+        model: 'llama3:8b',
         messages: [...messages, newMessage],
         stream:false
       });
