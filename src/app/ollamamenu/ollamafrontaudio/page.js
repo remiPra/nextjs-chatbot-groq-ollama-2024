@@ -35,23 +35,20 @@ const Page = () => {
   const sendMessage = async () => {
     if (input.trim() !== '') {
       try {
-        const userMessage = { role: 'user', content: input };
-        const updatedMessages = [...messages, userMessage];
+        const newMessage = { role: 'user', content: input };
+        const updatedMessages = [...messages, newMessage];
         setMessages(updatedMessages);
         setInput('');
-        const data = {
-          messages: updatedMessages,
-          model: 'mixtral-8x7b-32768',
-        };
+       
 
-        const response = await axios.post('https://api.groq.com/openai/v1/chat/completions', data, {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_GROQ_API_KEY}`,
-          },
-        });
-
-        const assistantMessage = response.data.choices[0].message.content;
+        const response = await axios.post('http://localhost:11434/api/chat', {
+            // model: 'mistral',
+            model: 'llama3:8b',
+            messages: [...messages, newMessage],
+            stream:false
+          });
+          console.log(response.data)
+        const assistantMessage = response.data.message.content;
         setMessages((prevMessages) => [...prevMessages, { role: 'assistant', content: assistantMessage }]);
         speak(assistantMessage);
       } catch (error) {

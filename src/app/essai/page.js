@@ -46,7 +46,7 @@ export default function Chat() {
                         placeholder="dite quelque chose"
                         onChange={handleInputChange}
                     />
-
+          
                 </form>
                 <SpeechRecognitionComponent onTranscriptUpdate={handleTranscriptUpdate} />
             </div>

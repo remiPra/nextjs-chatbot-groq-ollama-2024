@@ -13,7 +13,7 @@ const Page = () => {
   const handleKeyPress = async (e) => {
     if (e.key === 'Enter' && input.trim() !== '') {
       await sendMessage();
-    }
+    }   
   };
 
   const sendMessage = async () => {
@@ -68,6 +68,7 @@ const Page = () => {
             onChange={handleInputChange}
             onKeyPress={handleKeyPress}
           />
+          <button></button>
         </div>
       </div>
     </>
