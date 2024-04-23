@@ -2,7 +2,6 @@ import { ModelFusionTextStream, asChatMessages } from "@modelfusion/vercel-ai";
 import { Message, StreamingTextResponse } from "ai";
 import { ollama, streamText, embedMany, retrieve, VectorIndexRetriever } from "modelfusion";
 import { TextLoader } from "langchain/document_loaders/fs/text";
-import * as fs from 'fs'; // Importer fs de cette manière
 
 export const runtime = "edge";
 
