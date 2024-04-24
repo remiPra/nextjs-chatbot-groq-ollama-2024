@@ -8,6 +8,7 @@ const Page = () => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
   const [voice, setVoice] = useState(null);
+  const [isUserInteracted, setIsUserInteracted] = useState(false);
 
   useEffect(() => {
     const synth = window.speechSynthesis;
@@ -35,21 +36,23 @@ const Page = () => {
   const sendMessage = async () => {
     if (input.trim() !== '') {
       try {
-        const newMessage = { role: 'user', content: input };
-        const updatedMessages = [...messages, newMessage];
+        const userMessage = { role: 'user', content: input };
+        const updatedMessages = [...messages, userMessage];
         setMessages(updatedMessages);
         setInput('');
-       
+        const data = {
+          messages: updatedMessages,
+          model: 'mixtral-8x7b-32768',
+        };
 
-        const response = await axios.post('http://localhost:11434/api/chat', {
-            // model: 'mistral',
-            // model: 'llama3:8b',
-            model: 'phi3',
-            messages: [...messages, newMessage],
-            stream:false
-          });
-          console.log(response.data)
-        const assistantMessage = response.data.message.content;
+        const response = await axios.post('https://api.groq.com/openai/v1/chat/completions', data, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_GROQ_API_KEY}`,
+          },
+        });
+
+        const assistantMessage = response.data.choices[0].message.content;
         setMessages((prevMessages) => [...prevMessages, { role: 'assistant', content: assistantMessage }]);
         speak(assistantMessage);
       } catch (error) {
@@ -57,29 +60,18 @@ const Page = () => {
       }
     }
   };
-  const [voiceStart,setVoiceStart] = useState(false)
 
   const speak = (text) => {
-    if (window.speechSynthesis && voice) {
-      setVoiceStart(true)
+    if (window.speechSynthesis && voice && isUserInteracted) {
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.voice = voice;
-      utterance.onend = () => {
-        console.log("La réponse sonore est terminée.");
-        setVoiceStart(false);  // Mise à jour de l'état pour indiquer que la voix peut démarrer
-      };
       window.speechSynthesis.speak(utterance);
     }
   };
 
-  const handleStopAudio = () => {
-    setVoiceStart(false)
-    window.speechSynthesis.cancel(); // Cette fonction arrête toute parole en cours
+  const handleUserInteraction = () => {
+    setIsUserInteracted(true);
   };
-
-
-  const [talk, setTalk] = useState(true)
-  const [micro, setMicro] = useState(true)
 
   return (
     <>
@@ -107,18 +99,10 @@ const Page = () => {
           />
         </div>
         <div className='flex justify-center mt-8'>
-          {!voiceStart && <>
-          <SpeechRecognitionComponent language="fr-FR" onTranscriptUpdate={handleTranscriptUpdate} />
-          <button onClick={sendMessage} className="mx-2 flex justify-center items-center p-2 rounded-full bg-red-900 text-gray-100 focus:outline-none">
+          <SpeechRecognitionComponent language="fr-FR" onTranscriptUpdate={handleTranscriptUpdate} onUserInteraction={handleUserInteraction} />
+          <button onClick={sendMessage} className="mx-2 flex justify-center items-center p-2 rounded-full bg-red-900 text-gray-100 focus:outline-none" onMouseDown={handleUserInteraction}>
             <LuSendHorizonal size='8em' />
           </button>
-          </> 
-          }
-     {(voiceStart) &&
-     <button onClick={handleStopAudio} className="mx-2 flex justify-center items-center p-2 rounded-full bg-gray-700 text-white focus:outline-none">
-            Stop Audio
-          </button>
-    }     
         </div>
       </div>
     </>

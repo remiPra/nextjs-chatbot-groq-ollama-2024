@@ -18,7 +18,7 @@ export async function POST(req) {
     console.log('Request Body:', requestBody);
 
     // Check if 'messages' is a property of the parsed JSON:
-    const { messages } = requestBody;
+    const { messages , fileEmbeddings } = requestBody;
     if (!messages) {
         console.error('No messages found in request body.');
         return new Response('Bad Request: No messages provided.', { status: 400 });

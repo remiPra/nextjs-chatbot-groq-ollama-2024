@@ -17,7 +17,7 @@ const Page = () => {
             </Link>
           </li>
           <li>
-            <Link href="/ollamamenu/ollamamobile">
+            <Link href="/page3">
               Aller à la Page 3
             </Link>
           </li>

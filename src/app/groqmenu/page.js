@@ -17,7 +17,7 @@ const Page = () => {
             </Link>
           </li>
           <li>
-            <Link href="/page3">
+            <Link href="/groqmenu/groqfrontmobile">
               Aller à la Page 3
             </Link>
           </li>
