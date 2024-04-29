@@ -1,48 +1,62 @@
 'use client'
-import React, { useState, useEffect } from 'react';
 
-const SpeechRecognitionComponent = () => {
-  const [transcript, setTranscript] = useState('');
-  const [listening, setListening] = useState(false);
+import { useState } from 'react';
+import axios from 'axios';
 
-  useEffect(() => {
-    // Vérifiez si l'API est supportée
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const Page = () => {
+  const [audioData, setAudioData] = useState(null);
 
-    if (typeof SpeechRecognition !== "undefined") {
-      const recognition = new SpeechRecognition();
-      recognition.lang = "fr-FR"; // Définit la langue de reconnaissance en français
-
-      recognition.continuous = true; // Pour continuer la reconnaissance après avoir détecté une pause
-      recognition.interimResults = true; // Pour obtenir des résultats intermédiaires
-
-      recognition.onresult = (event) => {
-        const lastResult = event.results[event.resultIndex];
-        if (lastResult.isFinal) {
-          setTranscript(prev => prev + lastResult[0].transcript + ' ');
+  const synthesizeSpeech = async (text, voiceId) => {
+    try {
+      const response = await axios.post(
+        `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
+        {
+          text: text,
+         
+          voice_settings: {
+            stability: 0.5,
+            similarity_boost: 0.5,
+            style: 0.5,
+            use_speaker_boost: true,
+          },
+          pronunciation_dictionary_locators: [],
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'xi-api-key': process.env.NEXT_PUBLIC_VOICE_EVENLABS,
+          },
+          responseType: 'arraybuffer',
         }
-      };
+      );
 
-      if (listening) {
-        recognition.start();
-      } else {
-        recognition.stop();
-      }
-
-      return () => recognition.stop();
-    } else {
-      console.log("Speech Recognition API not supported.");
+      setAudioData(response.data);
+    } catch (error) {
+      console.error('Erreur lors de la synthèse vocale:', error);
     }
-  }, [listening]);
+  };
+
+  const handleTextToSpeech = () => {
+    const text = 'Bonjour, comment allez-vous ?';
+    const voiceId = 'imRmmzTqlLHt9Do1HufF';
+    const modelId = 'Hélène';
+
+    synthesizeSpeech(text, voiceId, modelId);
+  };
 
   return (
     <div>
-      <div onClick={() => setListening(prevState => !prevState)}>
-        {listening ? 'Stop Listening' : 'Start Listening'}
-      </div>
-      <p>Transcript: {transcript}</p>
+      <h1 className='mt-[100px]'>Synthèse vocale avec ElevenLabs</h1>
+      <button className='bg-red-100 m-7' onClick={handleTextToSpeech}>Synthétiser la parole</button>
+
+      {audioData && (
+        <audio controls autoPlay>
+          <source src={URL.createObjectURL(new Blob([audioData], { type: 'audio/mpeg' }))} type="audio/mpeg"  />
+          Votre navigateur ne supporte pas l'élément audio.
+        </audio>
+      )}
     </div>
   );
 };
 
-export default SpeechRecognitionComponent;
+export default Page;
