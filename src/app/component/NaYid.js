@@ -31,20 +31,20 @@ const NaYid = () => {
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-4">
               <Link
-                href="/ollamafront"
-                className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+                href="/ollamamenu"
+                className="text-blue-900 hover:text-blue-950 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-300 ease-in"
               >
                 ollama
               </Link>
               <Link
                 href="/groqmenu"
-                className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+                className="text-blue-900 hover:text-blue-950 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-300 ease-in"
               >
                 Groq
               </Link>
               <Link
-                href="/services"
-                className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+                href="/search"
+                className="text-blue-900 hover:text-blue-950 hover:underline px-3 py-2 rounded-md text-sm font-medium transition-colors duration-300 ease-in"
               >
                 Services
               </Link>

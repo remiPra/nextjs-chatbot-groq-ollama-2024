@@ -1,57 +1,47 @@
 // src/app/page.tsx
 "use client";
 
-import { useChat } from "ai/react";
+
 import { useEffect, useState } from "react";
 import { FaMicrophone } from "react-icons/fa";
 import SpeechRecognitionComponent from "./component/SpeechRecognitionComponent";
+import Link from "next/link";
 
 
 export default function Chat() {
-    const options = {
-        api: `${process.env.NEXT_PUBLIC_BASE_API_URL}/api/test`
-    };
-    const { messages, input, handleInputChange, handleSubmit } = useChat(options);
-    const [voice, setVoice] = useState(null);
-
-
-    // const handleTranscriptUpdate = (transcript) => {
-    //     setInput(transcript); // Utilisez setInput fourni par useChat pour mettre à jour l'input directement
-    //     console.log(input)
-    // };
-
-
-    return (<>
-        
-        <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
-
-            {messages.map((message) => (
-                <div
-                    key={message.id}
-                    className="whitespace-pre-wrap"
-                    style={{ color: message.role === "user" ? "black" : "green" }}
+    const textButton = "text-blue-900 font-bold hover:text-white px-3 py-2 rounded-md text-md"
+    return (
+        <div className="mt-[200px] mx-auto md:flex justify-center">
+            <div className="z-10 max-w-[300px] m-3 flex space-y-6 flex-col bg-gradient-to-tr  from-slate-300/30 via-gray-400/30 to-slate-600-400/30 p-4  backdrop-blur-md rounded-xl border-slate-100/30 border">
+                <Link
+                    href="/ollamamenu"
+                    className={textButton}
                 >
-                    <strong>{`${message.role}: `}</strong>
-                    {message.content}
-                    <br />
-                    <br />
-                </div>
-            ))}
-             </div>
+                    Ollama
+                </Link>
+            </div>
+            <div className="z-10 max-w-[300px] m-3  flex space-y-6 flex-col bg-gradient-to-tr  from-slate-300/30 via-gray-400/30 to-slate-600-400/30 p-4  backdrop-blur-md rounded-xl border-slate-100/30 border">
 
-            <div className="fixed flex items-center  mb-8 bottom-0 w-full">
-                <form onSubmit={handleSubmit} className="flex-grow flex justify-center">
-                    <input
-                        className="w-[300px] p-2  border border-gray-300 rounded shadow-xl"
-                        value={input}
-                        placeholder="dite quelque chose"
-                        onChange={handleInputChange}
-                    />
+            <Link
+                href="/ollamamenu"
+                className={textButton}
+            >
+                Groq
+            </Link>
+            </div>            
+            <div className="z-10 max-w-[300px] m-3  flex space-y-6 flex-col bg-gradient-to-tr  from-slate-300/30 via-gray-400/30 to-slate-600-400/30 p-4  backdrop-blur-md rounded-xl border-slate-100/30 border">
 
-                </form>
-                {/* <SpeechRecognitionComponent onTranscriptUpdate={handleTranscriptUpdate} /> */}
-           
+            <Link
+                href="/search"
+                className={textButton}
+            >
+                Search
+            </Link>
+            </div>
         </div>
-    </>
-    );
+
+
+
+    
+    )
 }
