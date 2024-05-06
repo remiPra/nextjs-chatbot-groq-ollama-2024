@@ -8,7 +8,7 @@ function Page() {
     const handleSpeak = async () => {
         const apiKey = process.env.NEXT_PUBLIC_TEXT_SPEECH_GOOGLE; // Utilise la clé API stockée en variable d'environnement
         const postData = {
-            input: { text: text },
+            input: { text: text },   
             voice: { languageCode: 'fr-FR', ssmlGender: 'NEUTRAL' }, // Changé en français
             audioConfig: { audioEncoding: 'MP3' },
         };
