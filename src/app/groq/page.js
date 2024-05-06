@@ -1,57 +1,47 @@
-// src/app/page.tsx
-"use client";
+'use client'
+import React, { useState } from 'react';
+import { Howl } from 'howler';
 
-import { useChat } from "ai/react";
-import { useEffect, useState } from "react";
-import { FaMicrophone } from "react-icons/fa";
-// import SpeechRecognitionComponent from "../SpeechRecognitionComponent";
+function Page() {
+    const [text, setText] = useState('');
+    const apiKey = process.env.NEXT_PUBLIC_TEXT_SPEECH_GOOGLE; // Utilise la clé API stockée en variable d'environnement
 
+    const handleSpeak = async () => {
+        const postData = {
+            input: { text: text },
+            voice: { languageCode: 'fr-FR', ssmlGender: 'NEUTRAL' }, // Changé en français
+            audioConfig: { audioEncoding: 'MP3' },
+        };
 
-export default function Chat() {
-    const options = {
-        api: `${process.env.NEXT_PUBLIC_BASE_API_URL}/api/test`
+        const response = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(postData),
+        });
+
+        const data = await response.json();
+        if (data.audioContent) {
+            // Directement utiliser base64 pour créer une source audio pour Howler
+            const audioSrc = `data:audio/mp3;base64,${data.audioContent}`;
+            const sound = new Howl({
+                src: [audioSrc],
+                format: ['mp3']
+            });
+            sound.play();
+        } else {
+            console.error('Failed to convert text to speech:', data);
+        }
     };
-    const { messages, input, handleInputChange, handleSubmit } = useChat(options);
-    const [voice, setVoice] = useState(null);
 
-
-    // const handleTranscriptUpdate = (transcript) => {
-    //     setInput(transcript); // Utilisez setInput fourni par useChat pour mettre à jour l'input directement
-    //     console.log(input)
-    // };
-
-
-    return (<>
-        
-        <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
-
-            {messages.map((message) => (
-                <div
-                    key={message.id}
-                    className="whitespace-pre-wrap"
-                    style={{ color: message.role === "user" ? "black" : "green" }}
-                >
-                    <strong>{`${message.role}: `}</strong>
-                    {message.content}
-                    <br />
-                    <br />
-                </div>
-            ))}
-             </div>
-
-            <div className="fixed flex items-center  mb-8 bottom-0 w-full">
-                <form onSubmit={handleSubmit} className="flex-grow flex justify-center">
-                    <input
-                        className="w-[300px] p-2  border border-gray-300 rounded shadow-xl"
-                        value={input}
-                        placeholder="dite quelque chose"
-                        onChange={handleInputChange}
-                    />
-
-                </form>
-                {/* <SpeechRecognitionComponent onTranscriptUpdate={handleTranscriptUpdate} /> */}
-           
+    return (
+        <div>
+            <input className='border mt-[100px]' type="text" value={text} onChange={e => setText(e.target.value)} />
+            <button onClick={handleSpeak}>Speak</button>
         </div>
-    </>
     );
 }
+
+export default Page;
+

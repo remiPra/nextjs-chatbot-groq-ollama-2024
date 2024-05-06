@@ -8,6 +8,8 @@ const Page = () => {
   const [input, setInput] = useState('');
   const [resultString, setResultString] = useState("");
   const [answer, setAnswer] = useState("");
+  const [isLoading, setIsLoading] = useState(false);  // Ajout de l'état isLoading
+
 
   const handleInputChange = (e) => {
     setInput(e.target.value);
@@ -21,6 +23,8 @@ const Page = () => {
   }, [data]);
 
   const sendMessage = async () => {
+    setIsLoading(true);  // Commencer le chargement
+
     try {
       const response = await axios.post('https://api.tavily.com/search', {
         api_key: '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',
@@ -36,7 +40,7 @@ const Page = () => {
 
       const message = {
         role: 'user',
-        content: `reponds a la question : 
+        content: `reponds en francais  a cette question : 
                 <question> ${input} </question> avec ce context 
                 <context> ${contentString} </context> `
       };
@@ -49,14 +53,16 @@ const Page = () => {
     } catch (error) {
       console.error(error);
     }
+    setIsLoading(false);  // Arrêter le chargement
+
   };
 
   return (
     <div>
       <h1 className='mt-[80px] mb-[30px]'>Results:</h1>
-      <p>{answer}</p>
+      {isLoading ? <p>Loading...</p> : <p>{answer}</p>}  // Afficher le chargement ou la réponse
       <div className="fixed  mb-8 bottom-20 w-full">
-        <div className="flex-grow flex justify-center">
+       {isLoading ? <p className="flex-grow flex justify-center">loading</p> : <div className="flex-grow flex justify-center">
           <input
             className="w-[300px] p-2 border border-gray-300 rounded shadow-xl"
             value={input}
@@ -66,7 +72,7 @@ const Page = () => {
           <button onClick={sendMessage} className="mx-2 flex justify-center items-center p-2 rounded-full bg-red-900 text-gray-100 focus:outline-none">
             <LuSendHorizonal size='8em' />
           </button>
-        </div>
+        </div> } 
       </div>
     </div>
   );

@@ -25,7 +25,7 @@ const NaYid = () => {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <Link href="/" className="text-xl font-bold">
-              Votre Logo
+              <img src="/logo.png"  className='w-[100px]'/>
             </Link>
           </div>
           <div className="hidden md:block">
@@ -46,10 +46,10 @@ const NaYid = () => {
                 href="/search"
                 className="text-blue-900 hover:text-blue-950 hover:underline px-3 py-2 rounded-md text-sm font-medium transition-colors duration-300 ease-in"
               >
-                Services
+                Search
               </Link>
               <Link
-                href="/contact"
+                href="/groq"
                 className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
               >
                 Contact

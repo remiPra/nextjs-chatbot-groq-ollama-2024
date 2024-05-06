@@ -83,7 +83,7 @@ const Page = () => {
 
   return (
     <>
-      <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
+      <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch mb-[250px]">
         {messages.map((message, index) => (
           <div
             key={index}
