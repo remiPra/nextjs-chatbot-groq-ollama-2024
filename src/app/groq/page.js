@@ -4,15 +4,15 @@ import { Howl } from 'howler';
 
 function Page() {
     const [text, setText] = useState('');
-    const apiKey = process.env.NEXT_PUBLIC_TEXT_SPEECH_GOOGLE; // Utilise la clé API stockée en variable d'environnement
-
+    
     const handleSpeak = async () => {
+        const apiKey = process.env.NEXT_PUBLIC_TEXT_SPEECH_GOOGLE; // Utilise la clé API stockée en variable d'environnement
         const postData = {
             input: { text: text },
             voice: { languageCode: 'fr-FR', ssmlGender: 'NEUTRAL' }, // Changé en français
             audioConfig: { audioEncoding: 'MP3' },
         };
-
+        console.log(apiKey)
         const response = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`, {
             method: 'POST',
             headers: {
@@ -25,6 +25,7 @@ function Page() {
         if (data.audioContent) {
             // Directement utiliser base64 pour créer une source audio pour Howler
             const audioSrc = `data:audio/mp3;base64,${data.audioContent}`;
+            console.log(audioSrc)
             const sound = new Howl({
                 src: [audioSrc],
                 format: ['mp3']
@@ -44,4 +45,3 @@ function Page() {
 }
 
 export default Page;
-
