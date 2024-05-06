@@ -8,6 +8,7 @@ const Page = () => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
   const [voice, setVoice] = useState(null);
+  const [audioReady, setAudioReady] = useState(false);
 
   useEffect(() => {
     const synth = window.speechSynthesis;
@@ -39,7 +40,7 @@ const Page = () => {
         const updatedMessages = [...messages, newMessage];
         setMessages(updatedMessages);
         setInput('');
-       
+
 
         const data = {
           messages: updatedMessages,
@@ -61,9 +62,13 @@ const Page = () => {
       }
     }
   };
-  const [voiceStart,setVoiceStart] = useState(false)
+  const [voiceStart, setVoiceStart] = useState(false)
 
   const speak = (text) => {
+    if (!audioReady) {
+      console.log('User interaction required to play audio.');
+      return;
+  }
     if (window.speechSynthesis && voice) {
       setVoiceStart(true)
       const utterance = new SpeechSynthesisUtterance(text);
@@ -71,7 +76,7 @@ const Page = () => {
       utterance.onend = () => {
         console.log("La réponse sonore est terminée.");
         setVoiceStart(false);  // Mise à jour de l'état pour indiquer que la voix peut démarrer
-      };
+      } 
       window.speechSynthesis.speak(utterance);
     }
   };
@@ -80,7 +85,9 @@ const Page = () => {
     setVoiceStart(false)
     window.speechSynthesis.cancel(); // Cette fonction arrête toute parole en cours
   };
-
+  const enableAudio = () => {
+    setAudioReady(true);
+  };
 
   const [talk, setTalk] = useState(true)
   const [micro, setMicro] = useState(true)
@@ -112,17 +119,19 @@ const Page = () => {
         </div>
         <div className='flex justify-center mt-8'>
           {!voiceStart && <>
-          <SpeechRecognitionComponent language="fr-FR" onTranscriptUpdate={handleTranscriptUpdate} />
-          <button onClick={sendMessage} className="mx-2 flex justify-center items-center p-2 rounded-full bg-red-900 text-gray-100 focus:outline-none">
-            <LuSendHorizonal size='8em' />
-          </button>
-          </> 
+            <button onClick={enableAudio}>Enable Audio</button>
+
+            <SpeechRecognitionComponent language="fr-FR" onTranscriptUpdate={handleTranscriptUpdate} />
+            <button onClick={sendMessage} className="mx-2 flex justify-center items-center p-2 rounded-full bg-red-900 text-gray-100 focus:outline-none">
+              <LuSendHorizonal size='8em' />
+            </button>
+          </>
           }
-     {(voiceStart) &&
-     <button onClick={handleStopAudio} className="mx-2 flex justify-center items-center p-2 rounded-full bg-gray-700 text-white focus:outline-none">
-            Stop Audio
-          </button>
-    }     
+          {(voiceStart) &&
+            <button onClick={handleStopAudio} className="mx-2 flex justify-center items-center p-2 rounded-full bg-gray-700 text-white focus:outline-none">
+              Stop Audio
+            </button>
+          }
         </div>
       </div>
     </>

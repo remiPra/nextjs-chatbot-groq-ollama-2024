@@ -80,7 +80,9 @@ const Page = () => {
     setVoiceStart(false)
     window.speechSynthesis.cancel(); // Cette fonction arrête toute parole en cours
   };
-
+  const enableAudio = () => {
+    setAudioReady(true);
+};
 
   const [talk, setTalk] = useState(true)
   const [micro, setMicro] = useState(true)
@@ -116,6 +118,7 @@ const Page = () => {
           <button onClick={sendMessage} className="mx-2 flex justify-center items-center p-2 rounded-full bg-red-900 text-gray-100 focus:outline-none">
             <LuSendHorizonal size='8em' />
           </button>
+          <button onClick={enableAudio}>Enable Audio</button>
           </> 
           }
      {(voiceStart) &&
