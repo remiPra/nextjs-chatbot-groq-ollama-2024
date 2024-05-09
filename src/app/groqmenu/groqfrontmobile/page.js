@@ -3,12 +3,17 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import SpeechRecognitionComponent from '@/app/component/SpeechRecognitionComponent';
 import { LuSendHorizonal } from "react-icons/lu";
+import { CiMenuBurger } from "react-icons/ci";
+import { Howl } from 'howler';
+
+
 
 const Page = () => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
   const [voice, setVoice] = useState(null);
   const [audioReady, setAudioReady] = useState(false);
+  const apiKey = process.env.NEXT_PUBLIC_TEXT_SPEECH_GOOGLE;
 
   useEffect(() => {
     const synth = window.speechSynthesis;
@@ -47,7 +52,7 @@ const Page = () => {
           model: 'mixtral-8x7b-32768',
         };
 
-        const response = await axios.post('https://api.groq.com/openai/v1/chat/completions', data, {
+        const response = await axios.post( 'https://api.groq.com/openai/v1/chat/completions', data, {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${process.env.NEXT_PUBLIC_GROQ_API_KEY}`,
@@ -64,26 +69,43 @@ const Page = () => {
   };
   const [voiceStart, setVoiceStart] = useState(false)
 
-  const speak = (text) => {
-    if (!audioReady) {
-      console.log('User interaction required to play audio.');
-      return;
-  }
-    if (window.speechSynthesis && voice) {
-      setVoiceStart(true)
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.voice = voice;
-      utterance.onend = () => {
-        console.log("La réponse sonore est terminée.");
-        setVoiceStart(false);  // Mise à jour de l'état pour indiquer que la voix peut démarrer
-      } 
-      window.speechSynthesis.speak(utterance);
+  const speak = async (text) => {
+    const apiKey = process.env.NEXT_PUBLIC_TEXT_SPEECH_GOOGLE;
+    const postData = {
+      input: { text: text },
+      voice: { languageCode: 'fr-FR', ssmlGender: 'NEUTRAL' },
+      audioConfig: { audioEncoding: 'MP3' },
+    };
+
+    const response = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(postData),
+    });
+    const data = await response.json();
+    if (data.audioContent) {
+      const audioSrc = `data:audio/mp3;base64,${data.audioContent}`;
+      const sound = new Howl({
+        src: [audioSrc],
+        format: ['mp3']
+      });
+      sound.play();
+    } else {
+      console.error('Failed to convert text to speech:', data);
     }
+
   };
 
   const handleStopAudio = () => {
     setVoiceStart(false)
     window.speechSynthesis.cancel(); // Cette fonction arrête toute parole en cours
+    if (sound) {
+      sound.stop(); // Arrête le son de Howler
+    }
+
+
   };
   const enableAudio = () => {
     setAudioReady(true);
