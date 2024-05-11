@@ -3,12 +3,14 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import SpeechRecognitionComponent from '@/app/component/SpeechRecognitionComponent';
 import { LuSendHorizonal } from "react-icons/lu";
+import { Audio } from 'react-loader-spinner'
+
 
 const Page = () => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
   const [voice, setVoice] = useState(null);
-
+  const [isLoading, setIsLoading] = useState(false);
   useEffect(() => {
     const synth = window.speechSynthesis;
     const setVoiceList = () => {
@@ -33,6 +35,8 @@ const Page = () => {
   };
 
   const sendMessage = async () => {
+    setIsLoading(true);  // Commencer le chargement
+
     if (input.trim() !== '') {
       try {
         const newMessage = { role: 'user', content: input };
@@ -43,8 +47,8 @@ const Page = () => {
 
         const response = await axios.post('http://localhost:11434/api/chat', {
             // model: 'mistral',
-            model: 'llama3:8b',
-            // model: "dolphin-llama3:8b",
+            // model: 'llama3:8b',
+            model: "dolphin-llama3:8b",
             // model: 'phi3',
             messages: [...messages, newMessage],
             stream:false
@@ -57,6 +61,8 @@ const Page = () => {
         console.error('Error:', error);
       }
     }
+    setIsLoading(false);  // Arrêter le chargement
+
   };
   const [voiceStart,setVoiceStart] = useState(false)
 
@@ -98,7 +104,8 @@ const Page = () => {
         ))}
       </div>
 
-      <div className="fixed  mb-8 bottom-20 w-full">
+      {!isLoading ?
+            <div className="fixed  mb-8 bottom-20 w-full">
         <div className="flex-grow flex justify-center">
           <input
             className="w-[300px] p-2 border border-gray-300 rounded shadow-xl"
@@ -121,7 +128,16 @@ const Page = () => {
           </button>
     }     
         </div>
-      </div>
+      </div> :<div className="z-2 top-0 left-0 bg-slate-100 fixed flex justify-center items-center w-full h-screen">
+      <Audio
+                height="150"
+                width="150"
+                radius="9"
+                color="blue"
+                ariaLabel="loading"
+                wrapperStyle
+                wrapperClass
+            /></div> }
     </>
   );
 };

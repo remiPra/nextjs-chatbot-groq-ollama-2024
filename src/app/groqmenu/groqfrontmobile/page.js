@@ -37,7 +37,7 @@ const Page = () => {
   const handleTranscriptUpdate = (transcript) => {
     setInput(transcript);
   };
-
+    
   const sendMessage = async () => {
     if (input.trim() !== '') {
       try {

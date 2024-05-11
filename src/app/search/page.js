@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { LuSendHorizonal } from 'react-icons/lu';
+import { Audio } from 'react-loader-spinner';
 
 const Page = () => {
   const [data, setData] = useState([]);
@@ -59,6 +60,16 @@ const Page = () => {
 
   return (
     <div>
+      {isLoading && <div className="z-2 top-0 left-0 bg-slate-100 fixed flex justify-center items-center w-full h-screen">
+      <Audio
+                height="150"
+                width="150"
+                radius="9"
+                color="blue"
+                ariaLabel="loading"
+                wrapperStyle
+                wrapperClass
+            /></div> }
       <h1 className='mt-[80px] mb-[30px]'>Results:</h1>
       {isLoading ? <p>Loading...</p> : <p>{answer}</p>}  // Afficher le chargement ou la réponse
       <div className="fixed  mb-8 bottom-20 w-full">
