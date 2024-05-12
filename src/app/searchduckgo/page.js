@@ -10,6 +10,7 @@ const Page = () => {
     const [resultString, setResultString] = useState("");
     const [answer, setAnswer] = useState("");
     const [isLoading, setIsLoading] = useState(false);  // Ajout de l'état isLoading
+    const [speakchoice,setspeakchoice]=useState(false)
 
 
     const handleInputChange = (e) => {
@@ -73,7 +74,9 @@ const Page = () => {
                     },
                 });
                 setAnswer(chatResponse.data.choices[0].message.content);
-                speak(chatResponse.data.choices[0].message.content)
+                if(speakchoice){
+                    speak(chatResponse.data.choices[0].message.content)
+                }
                 // const assistantMessage = response.data.choices[0].message.content;
                 // setMessages((prevMessages) => [...prevMessages, { role: 'assistant', content: assistantMessage }]);
             } catch (error) {
@@ -180,10 +183,19 @@ const Page = () => {
                             onChange={handleInputChange}
                             onKeyPress={handleKeyPress}
                         />
-                        <button></button>
+                        
+                     {(!speakchoice) ? 
+                     <button onClick={()=>setspeakchoice(true)} className="mx-2 flex justify-center items-center p-2 rounded-full bg-slate-300 text-gray-100 focus:outline-none">
+                     audio
+                 </button>
+                     : 
+                     <button onClick={()=>setspeakchoice(false)} className="mx-2 flex justify-center items-center p-2 rounded-full bg-slate-300 text-gray-100 focus:outline-none">
+                                non audio
+                            </button>
+                     }   
                     </div>}
                     {isAudioPlay &&
-                        <div className='flex justify-center mt-8'>
+                        <div className='flex-grow flex justify-center mt-8'>
 
                             <button onClick={stopSound} className="mx-2 flex justify-center items-center p-2 rounded-full bg-slate-300 text-gray-100 focus:outline-none">
                                 stop
