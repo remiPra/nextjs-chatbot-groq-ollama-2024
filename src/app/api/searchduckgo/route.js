@@ -13,7 +13,7 @@ export async function POST(req) {
     return new Response(JSON.stringify(searchData), {
         headers: {
             "Content-Type": "application/json",
-        },
+        }, 
         status: 200, // HTTP status code
     });
 

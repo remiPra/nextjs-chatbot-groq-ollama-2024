@@ -50,7 +50,7 @@ const Page = () => {
                 });
 
 
-                const responsea = await axios.post('/api/searchduckgo', { data: response.data.choices[0].message.content }, {
+                const responsea = await axios.post(`${process.env.NEXT_PUBLIC_BASE_API_URL}/api/searchduckgo`, { data: response.data.choices[0].message.content }, {
                     headers: {
                         'Content-Type': 'application/json'
                     }
