@@ -28,8 +28,8 @@ const Page = () => {
 
     try {
       const response = await axios.post('https://api.tavily.com/search', {
-        api_key: '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',
-        query: input
+        api_key: NEXT_PUBLIC_TAVILY_API_KEY,
+        query: input       
       });
       const searchData = response.data.results;
       setData(searchData);
