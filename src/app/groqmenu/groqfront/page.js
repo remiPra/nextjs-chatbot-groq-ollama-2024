@@ -23,7 +23,6 @@ const Page = () => {
         const updatedMessages = [...messages, userMessage];
         setMessages(updatedMessages);
         setInput('');
-        console.log(process.env)
         const data = {
           messages: updatedMessages,
           model: 'mixtral-8x7b-32768',
