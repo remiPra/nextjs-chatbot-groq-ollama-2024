@@ -51,6 +51,7 @@ const Page = () => {
           messages: updatedMessages,
           model: 'mixtral-8x7b-32768',
         };
+        console.log(data)
 
         const response = await axios.post( 'https://api.groq.com/openai/v1/chat/completions', data, {
           headers: {

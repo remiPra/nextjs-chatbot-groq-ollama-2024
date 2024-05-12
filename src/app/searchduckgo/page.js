@@ -37,22 +37,12 @@ const Page = () => {
                 console.log(process.env)
 
                 // etape 1 les questions 
-                const data = {
-                    messages: updatedMessages,
-                    model: 'mixtral-8x7b-32768',
-                };
+             
 
-                const response = await axios.post('https://api.groq.com/openai/v1/chat/completions', data, {
+
+                const responsea = await axios.post(`${process.env.NEXT_PUBLIC_BASE_API_URL}/api/searchduckgo`, { data: input }, {
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_GROQ_API_KEY}`,
-                    },
-                });
-
-
-                const responsea = await axios.post(`${process.env.NEXT_PUBLIC_BASE_API_URL}/api/searchduckgo`, { data: response.data.choices[0].message.content }, {
-                    headers: {
-                        'Content-Type': 'application/json'   
+                        'Content-Type': 'application/json'
                     }
                 });
                 const resultsearch = await responsea.data
@@ -69,13 +59,21 @@ const Page = () => {
                 de ce texte :  
                 <context> ${contentString} </context> `
                 };
-                const chatResponse = await axios.post('http://localhost:11434/api/chat', {
-                    model: 'mistral',
+                const data1 = {
                     messages: [message],
-                    stream: false
-                });
-                setAnswer(chatResponse.data.message.content);
+                    model: 'mixtral-8x7b-32768',
+                };
+                console.log(data1)
 
+
+                const chatResponse = await axios.post('https://api.groq.com/openai/v1/chat/completions', data1 , {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_GROQ_API_KEY}`,
+                    },
+                });
+                setAnswer(chatResponse.data.choices[0].message.content);
+                speak(chatResponse.data.choices[0].message.content)
                 // const assistantMessage = response.data.choices[0].message.content;
                 // setMessages((prevMessages) => [...prevMessages, { role: 'assistant', content: assistantMessage }]);
             } catch (error) {
@@ -85,6 +83,62 @@ const Page = () => {
         setIsLoading(false);  // Arrêter le chargement
 
     };
+    const [sound, setSound] = useState(null);
+    const [isAudioPlay, setIsAudioPlay] = useState(false)
+   
+    const speak = async (text) => {
+        setIsAudioPlay(true)
+        console.log("speak")
+
+
+        const apiKey = process.env.NEXT_PUBLIC_TEXT_SPEECH_GOOGLE;
+        const postData = {
+            input: { text: text },
+            voice: { languageCode: 'fr-FR', ssmlGender: 'NEUTRAL' },
+            audioConfig: { audioEncoding: 'MP3' },
+        };
+
+        const response = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(postData),
+        });
+        const data = await response.json();
+        if (data.audioContent) {
+            const audioSrc = `data:audio/mp3;base64,${data.audioContent}`;
+            const sound = new Howl({
+                src: [audioSrc],
+                format: ['mp3'],
+                onend: () => {
+                    // Revient à la vidéo originale lorsque l'audio est terminé
+                    setIsAudioPlay(false)
+                }
+            });
+            sound.play();
+            setSound(sound);  // Stocker l'instance Howl dans l'état
+
+        } else {
+            console.error('Failed to convert text to speech:', data);
+        }
+
+    };
+    // Fonction pour arrêter le son
+    const stopSound = () => {
+        if (sound) {
+            sound.stop();
+            setIsAudioPlay(false)
+            
+
+        }
+    };
+
+
+
+
+
+
     return (
         <>
             {isLoading ? <div className="flex justify-center items-center w-full h-screen"><Audio
@@ -96,8 +150,8 @@ const Page = () => {
                 wrapperStyle
                 wrapperClass
             />
-         
-            
+
+
             </div> : <>
                 <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
                     {/* {messages.map((message, index) => (
@@ -116,6 +170,8 @@ const Page = () => {
                 </div>
 
                 <div className="fixed flex items-center mb-8 bottom-0 w-full">
+                    
+                {!isAudioPlay &&
                     <div className="flex-grow flex justify-center">
                         <input
                             className="w-[300px] p-2 border border-gray-300 rounded shadow-xl"
@@ -125,7 +181,15 @@ const Page = () => {
                             onKeyPress={handleKeyPress}
                         />
                         <button></button>
-                    </div>
+                    </div>}
+                    {isAudioPlay &&
+                        <div className='flex justify-center mt-8'>
+
+                            <button onClick={stopSound} className="mx-2 flex justify-center items-center p-2 rounded-full bg-slate-300 text-gray-100 focus:outline-none">
+                                stop
+                            </button>
+                        </div>
+                    }
                 </div>
             </>}
         </>
