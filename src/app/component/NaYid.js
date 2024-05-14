@@ -58,7 +58,7 @@ const NaYid = () => {
 
             </div>
           </div>
-          <div>
+          <div  className="text-gray-300 hover:cursor-pointer hover:text-blue-800 px-3 py-2 rounded-md text-sm font-medium">
           <CiMenuBurger className='text-[30px]' />
 
           </div>

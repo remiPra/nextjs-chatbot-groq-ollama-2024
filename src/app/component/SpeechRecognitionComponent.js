@@ -32,6 +32,15 @@ const SpeechRecognitionComponent = ({ onTranscriptUpdate, language }) => {
         console.log("Speech Recognition API not supported.");
       }
     }
+
+    // Check if permission was already granted
+    navigator.permissions.query({ name: 'microphone' }).then((result) => {
+      if (result.state === 'granted') {
+        setPermissionGranted(true);
+      }
+    }).catch((error) => {
+      console.error("Permission query error: ", error);
+    });
   }, [language, onTranscriptUpdate]);
 
   useEffect(() => {
@@ -52,6 +61,7 @@ const SpeechRecognitionComponent = ({ onTranscriptUpdate, language }) => {
     navigator.mediaDevices.getUserMedia({ audio: true })
       .then(() => {
         setPermissionGranted(true);
+        setListening(true);
       })
       .catch((error) => {
         console.error("Microphone permission error: ", error);
