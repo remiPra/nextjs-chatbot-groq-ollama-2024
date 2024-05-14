@@ -1,7 +1,8 @@
 'use client'
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Audio } from 'react-loader-spinner'
+import SpeechRecognitionComponent from '../component/SpeechRecognitionComponent';
 
 
 const Page = () => {
@@ -10,8 +11,29 @@ const Page = () => {
     const [resultString, setResultString] = useState("");
     const [answer, setAnswer] = useState("");
     const [isLoading, setIsLoading] = useState(false);  // Ajout de l'état isLoading
-    const [speakchoice,setspeakchoice]=useState(false)
+    const [speakchoice, setspeakchoice] = useState(false)
 
+
+    useEffect(() => {
+        const synth = window.speechSynthesis;
+        const setVoiceList = () => {
+            setVoice(synth.getVoices().find(v => v.lang.startsWith('fr')) || synth.getVoices()[0]); // Préférez une voix française
+        };
+
+        if (synth.onvoiceschanged !== undefined) {
+            synth.onvoiceschanged = setVoiceList;
+        }
+
+        return () => {
+            synth.onvoiceschanged = null;
+        };
+    }, []);
+
+
+
+    const handleTranscriptUpdate = (transcript) => {
+        setInput(transcript);
+    };
 
     const handleInputChange = (e) => {
         setInput(e.target.value);
@@ -38,7 +60,7 @@ const Page = () => {
                 console.log(process.env)
 
                 // etape 1 les questions 
-             
+
 
 
                 const responsea = await axios.post(`${process.env.NEXT_PUBLIC_BASE_API_URL}/api/searchduckgo`, { data: input }, {
@@ -67,14 +89,14 @@ const Page = () => {
                 console.log(data1)
 
 
-                const chatResponse = await axios.post('https://api.groq.com/openai/v1/chat/completions', data1 , {
+                const chatResponse = await axios.post('https://api.groq.com/openai/v1/chat/completions', data1, {
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${process.env.NEXT_PUBLIC_GROQ_API_KEY}`,
                     },
                 });
                 setAnswer(chatResponse.data.choices[0].message.content);
-                if(speakchoice){
+                if (speakchoice) {
                     speak(chatResponse.data.choices[0].message.content)
                 }
                 // const assistantMessage = response.data.choices[0].message.content;
@@ -88,7 +110,7 @@ const Page = () => {
     };
     const [sound, setSound] = useState(null);
     const [isAudioPlay, setIsAudioPlay] = useState(false)
-   
+
     const speak = async (text) => {
         setIsAudioPlay(true)
         console.log("speak")
@@ -132,7 +154,7 @@ const Page = () => {
         if (sound) {
             sound.stop();
             setIsAudioPlay(false)
-            
+
 
         }
     };
@@ -173,27 +195,29 @@ const Page = () => {
                 </div>
 
                 <div className="fixed flex items-center mb-8 bottom-0 w-full">
-                    
-                {!isAudioPlay &&
-                    <div className="flex-grow flex justify-center">
-                        <input
-                            className="w-[300px] p-2 border border-gray-300 rounded shadow-xl"
-                            value={input}
-                            placeholder="Dites quelque chose"
-                            onChange={handleInputChange}
-                            onKeyPress={handleKeyPress}
-                        />
-                        
-                     {(!speakchoice) ? 
-                     <button onClick={()=>setspeakchoice(true)} className="mx-2 flex justify-center items-center p-2 rounded-full bg-slate-300 text-gray-100 focus:outline-none">
-                     audio
-                 </button>
-                     : 
-                     <button onClick={()=>setspeakchoice(false)} className="mx-2 flex justify-center items-center p-2 rounded-full bg-slate-300 text-gray-100 focus:outline-none">
-                                non audio
-                            </button>
-                     }   
-                    </div>}
+
+                    {!isAudioPlay &&
+                        <div className="flex-grow flex justify-center">
+                            <SpeechRecognitionComponent language="fr-FR" onTranscriptUpdate={handleTranscriptUpdate} />
+
+                            <input
+                                className="w-[300px] p-2 border border-gray-300 rounded shadow-xl"
+                                value={input}
+                                placeholder="Dites quelque chose"
+                                onChange={handleInputChange}
+                                onKeyPress={handleKeyPress}
+                            />
+
+                            {(!speakchoice) ?
+                                <button onClick={() => setspeakchoice(true)} className="mx-2 flex justify-center items-center p-2 rounded-full bg-slate-300 text-gray-100 focus:outline-none">
+                                    audio
+                                </button>
+                                :
+                                <button onClick={() => setspeakchoice(false)} className="mx-2 flex justify-center items-center p-2 rounded-full bg-slate-300 text-gray-100 focus:outline-none">
+                                    non audio
+                                </button>
+                            }
+                        </div>}
                     {isAudioPlay &&
                         <div className='flex-grow flex justify-center mt-8'>
 

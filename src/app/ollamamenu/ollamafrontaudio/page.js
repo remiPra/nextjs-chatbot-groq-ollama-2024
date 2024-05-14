@@ -47,8 +47,8 @@ const Page = () => {
 
         const response = await axios.post('http://localhost:11434/api/chat', {
             // model: 'mistral',
-            // model: 'llama3:8b',
-            model: "dolphin-llama3:8b",
+            model: 'llama3:8b',
+            // model: "dolphin-llama3:8b",
             // model: 'phi3',
             messages: [...messages, newMessage],
             stream:false
@@ -74,7 +74,7 @@ const Page = () => {
       utterance.onend = () => {
         console.log("La réponse sonore est terminée.");
         setVoiceStart(false);  // Mise à jour de l'état pour indiquer que la voix peut démarrer
-      };
+      };  
       window.speechSynthesis.speak(utterance);
     }
   };

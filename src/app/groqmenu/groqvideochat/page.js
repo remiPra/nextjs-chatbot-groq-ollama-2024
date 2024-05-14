@@ -37,7 +37,7 @@ function BackgroundVideo() {
 
     const speak = async (text) => {
         console.log("speak")
-        setVideoUrl('../../output1.mp4');
+        setVideoUrl('../../katytalking.mp4');
 
         const apiKey = process.env.NEXT_PUBLIC_TEXT_SPEECH_GOOGLE;
         const postData = {
@@ -84,9 +84,9 @@ function BackgroundVideo() {
         }
     };
 
-    const enableAudio = () => {
-        setIsAudioPlay(true);
-    };
+    // const enableAudio = () => {
+    //     setIsAudioPlay(true);
+    // };
 
     const sendMessage = async () => {
         setIsAudioPlay(true)
@@ -153,8 +153,8 @@ function BackgroundVideo() {
                 </div>
                 <div className='flex justify-center mt-8'>
                     {!voiceStart && <>
-                        <button className='mx-2 flex justify-center items-center p-2 rounded-full bg-slate-300 text-gray-100 focus:outline-none' onClick={enableAudio}>
-                            Enable Audio</button>
+                        {/* <button className='mx-2 flex justify-center items-center p-2 rounded-full bg-slate-300 text-gray-100 focus:outline-none' onClick={enableAudio}>
+                            Enable Audio</button> */}
 
                         <SpeechRecognitionComponent language="fr-FR" onTranscriptUpdate={handleTranscriptUpdate} />
                         <button onClick={sendMessage} className="mx-2 flex justify-center items-center p-2 rounded-full bg-slate-300 text-gray-100 focus:outline-none">

@@ -1,48 +1,93 @@
-// 'use client' est optionnel ici; il est utilisé si vous travaillez avec Next.js 14 et souhaitez marquer explicitement ce composant pour le rendu côté client.
 'use client';
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useRef } from 'react';
 import { FaMicrophone } from "react-icons/fa";
 
-
-const SpeechRecognitionComponent = ({ onTranscriptUpdate , language }) => {
+const SpeechRecognitionComponent = ({ onTranscriptUpdate, language }) => {
   const [listening, setListening] = useState(false);
+  const [permissionGranted, setPermissionGranted] = useState(false);
+  const recognitionRef = useRef(null);
 
   useEffect(() => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (typeof SpeechRecognition !== "undefined") {
-      const recognition = new SpeechRecognition();
-      recognition.lang = language;
-      // recognition.lang = "en-US";
-      recognition.continuous = true;
-      recognition.interimResults = true;
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (typeof SpeechRecognition !== "undefined") {
+        recognitionRef.current = new SpeechRecognition();
+        recognitionRef.current.lang = language;
+        recognitionRef.current.continuous = true;
+        recognitionRef.current.interimResults = true;
 
-      recognition.onresult = (event) => {
-        const lastResult = event.results[event.resultIndex];
-        if (lastResult.isFinal) {
-          const newTranscript = lastResult[0].transcript + ' ';
-          onTranscriptUpdate(newTranscript);
-        }
-      };
+        recognitionRef.current.onresult = (event) => {
+          const lastResult = event.results[event.resultIndex];
+          if (lastResult.isFinal) {
+            const newTranscript = lastResult[0].transcript + ' ';
+            onTranscriptUpdate(newTranscript);
+          }
+        };
 
-      if (listening) {
-        recognition.start();
+        recognitionRef.current.onerror = (event) => {
+          console.error("Speech Recognition Error: ", event.error);
+        };
       } else {
-        recognition.stop();
+        console.log("Speech Recognition API not supported.");
+      }
+    }
+  }, [language, onTranscriptUpdate]);
+
+  useEffect(() => {
+    if (recognitionRef.current) {
+      if (listening) {
+        recognitionRef.current.start();
+      } else {
+        recognitionRef.current.stop();
       }
 
-      return () => recognition.stop();
-    } else {
-      console.log("Speech Recognition API not supported.");
+      return () => {
+        recognitionRef.current.stop();
+      };
     }
-  }, [listening, onTranscriptUpdate]);
+  }, [listening]);
+
+  const handlePermissionRequest = () => {
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(() => {
+        setPermissionGranted(true);
+      })
+      .catch((error) => {
+        console.error("Microphone permission error: ", error);
+      });
+  };
+
+  const handleMicrophoneClick = () => {
+    if (permissionGranted) {
+      setListening((prevState) => !prevState);
+    } else {
+      console.log("Microphone permission not granted.");
+    }
+  };
 
   return (
-    <div onClick={() => setListening(prevState => !prevState)}>
-      {listening ? <div className="flex justify-center  items-center p-2 rounded-full bg-red-900
-       text-gray-100 focus:outline-none" ><FaMicrophone size="8em" /></div> : 
-      <div className="flex justify-center items-center p-2 rounded-full bg-gray-200 
-      text-gray-700 hover:bg-gray-300 focus:outline-none" >
-        <FaMicrophone size='8em' /></div> }
+    <div>
+      {!permissionGranted ? (
+        <button
+          onClick={handlePermissionRequest}
+          className="p-2 rounded bg-blue-500 text-white hover:bg-blue-600 focus:outline-none"
+        >
+          Autoriser le microphone
+        </button>
+      ) : (
+        <div onClick={handleMicrophoneClick}>
+          {listening ? (
+            <div className="flex justify-center items-center p-2 rounded-full bg-red-900 text-gray-100 focus:outline-none">
+              <FaMicrophone size="8em" />
+            </div>
+          ) : (
+            <div className="flex justify-center items-center p-2 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none">
+              <FaMicrophone size='8em' />
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
