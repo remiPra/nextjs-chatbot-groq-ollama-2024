@@ -8,11 +8,13 @@ const Page = () => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
   const [voice, setVoice] = useState(null);
+  const [voiceStart, setVoiceStart] = useState(false);
+  const [audioReady, setAudioReady] = useState(false);
 
   useEffect(() => {
     const synth = window.speechSynthesis;
     const setVoiceList = () => {
-      setVoice(synth.getVoices().find(v => v.lang.startsWith('fr')) || synth.getVoices()[0]); // Préférez une voix française
+      setVoice(synth.getVoices().find(v => v.lang.startsWith('fr')) || synth.getVoices()[0]);
     };
 
     if (synth.onvoiceschanged !== undefined) {
@@ -29,7 +31,7 @@ const Page = () => {
   };
 
   const handleTranscriptUpdate = (transcript) => {
-    setInput(transcript);
+    setInput(prevInput => prevInput + ' ' + transcript);
   };
 
   const sendMessage = async () => {
@@ -39,7 +41,6 @@ const Page = () => {
         const updatedMessages = [...messages, newMessage];
         setMessages(updatedMessages);
         setInput('');
-       
 
         const data = {
           messages: updatedMessages,
@@ -61,31 +62,28 @@ const Page = () => {
       }
     }
   };
-  const [voiceStart,setVoiceStart] = useState(false)
 
   const speak = (text) => {
     if (window.speechSynthesis && voice) {
-      setVoiceStart(true)
+      setVoiceStart(true);
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.voice = voice;
       utterance.onend = () => {
         console.log("La réponse sonore est terminée.");
-        setVoiceStart(false);  // Mise à jour de l'état pour indiquer que la voix peut démarrer
+        setVoiceStart(false);
       };
       window.speechSynthesis.speak(utterance);
     }
   };
 
   const handleStopAudio = () => {
-    setVoiceStart(false)
-    window.speechSynthesis.cancel(); // Cette fonction arrête toute parole en cours
+    setVoiceStart(false);
+    window.speechSynthesis.cancel();
   };
+
   const enableAudio = () => {
     setAudioReady(true);
-};
-
-  const [talk, setTalk] = useState(true)
-  const [micro, setMicro] = useState(true)
+  };
 
   return (
     <>
@@ -103,7 +101,7 @@ const Page = () => {
         ))}
       </div>
 
-      <div className="fixed  mb-8 bottom-20 w-full">
+      <div className="fixed mb-8 bottom-20 w-full">
         <div className="flex-grow flex justify-center">
           <input
             className="w-[300px] p-2 border border-gray-300 rounded shadow-xl"
@@ -113,19 +111,20 @@ const Page = () => {
           />
         </div>
         <div className='flex justify-center mt-8'>
-          {!voiceStart && <>
-          <SpeechRecognitionComponent language="fr-FR" onTranscriptUpdate={handleTranscriptUpdate} />
-          <button onClick={sendMessage} className="mx-2 flex justify-center items-center p-2 rounded-full bg-red-900 text-gray-100 focus:outline-none">
-            <LuSendHorizonal size='8em' />
-          </button>
-          <button onClick={enableAudio}>Enable Audio</button>
-          </> 
-          }
-     {(voiceStart) &&
-     <button onClick={handleStopAudio} className="mx-2 flex justify-center items-center p-2 rounded-full bg-gray-700 text-white focus:outline-none">
-            Stop Audio
-          </button>
-    }     
+          {!voiceStart && (
+            <>
+              <SpeechRecognitionComponent language="fr-FR" onTranscriptUpdate={handleTranscriptUpdate} />
+              <button onClick={sendMessage} className="mx-2 flex justify-center items-center p-2 rounded-full bg-red-900 text-gray-100 focus:outline-none">
+                <LuSendHorizonal size='8em' />
+              </button>
+              <button onClick={enableAudio}>Enable Audio</button>
+            </>
+          )}
+          {voiceStart && (
+            <button onClick={handleStopAudio} className="mx-2 flex justify-center items-center p-2 rounded-full bg-gray-700 text-white focus:outline-none">
+              Stop Audio
+            </button>
+          )}
         </div>
       </div>
     </>

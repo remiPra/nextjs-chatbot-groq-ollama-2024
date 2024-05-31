@@ -51,9 +51,9 @@ const Page = () => {
             model: 'llama3:8b',
             
             // model: 'phi3',
-            options: {
-                num_ctx: 256000
-              },
+            // options: {
+            //     num_ctx: 256000
+            //   },
               prompt:input,
             // messages: [...messages, newMessage],
             stream:false

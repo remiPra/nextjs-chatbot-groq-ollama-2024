@@ -21,6 +21,7 @@ const SpeechRecognitionComponent = ({ onTranscriptUpdate, language }) => {
           const lastResult = event.results[event.resultIndex];
           if (lastResult.isFinal) {
             const newTranscript = lastResult[0].transcript + ' ';
+            console.log('New word added:', newTranscript.trim()); // Log the new word
             onTranscriptUpdate(newTranscript);
           }
         };

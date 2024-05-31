@@ -48,7 +48,7 @@ const Page = () => {
         const response = await axios.post('http://localhost:11434/api/chat', {
             // model: 'mistral',
             // model: 'llama3:8b',
-            model: "llama2-uncensored:7b-chat",
+            model: "wizard-vicuna-uncensored:7b",
             // model: 'phi3',
             messages: [...messages, newMessage],
             stream:false

@@ -3,19 +3,24 @@ import Link from 'next/link';
 const Page = () => {
   return (
     <div>
-      <h1 className='mt-[100px]'>Choisissez votre destination</h1>
+      <h1 className='w-full flex justify-center mb-8 text-center mt-[100px]'>Choisissez le style de chatbot que vous voulez</h1>
       <nav>
         <ul>
           <li className="z-10 max-w-[300px] m-3 flex space-y-6 flex-col bg-gradient-to-tr  from-slate-300/30 via-gray-400/30 to-slate-600-400/30 p-4  backdrop-blur-md rounded-xl border-slate-100/30 border">
             <Link href="/groqmenu/groqfront">
-              Groq Simple Chat
+              Creer un bot
             </Link>
           </li>
-          {/* <li>
+          <li className="z-10 max-w-[300px] m-3 flex space-y-6 flex-col bg-gradient-to-tr  from-slate-300/30 via-gray-400/30 to-slate-600-400/30 p-4  backdrop-blur-md rounded-xl border-slate-100/30 border">
             <Link href="/groqmenu/groqfrontaudio">
-              Aller à la Page 2
+              Groq chat avec audio gratuit
             </Link>
-          </li> */}
+          </li>
+          <li className="z-10 max-w-[300px] m-3 flex space-y-6 flex-col bg-gradient-to-tr  from-slate-300/30 via-gray-400/30 to-slate-600-400/30 p-4  backdrop-blur-md rounded-xl border-slate-100/30 border">
+            <Link href="/groqmenu/groqfrontlivemacron">
+              Groq chat commande audio
+            </Link>
+          </li>
           <li className="z-10 max-w-[300px] m-3 flex space-y-6 flex-col bg-gradient-to-tr  from-slate-300/30 via-gray-400/30 to-slate-600-400/30 p-4  backdrop-blur-md rounded-xl border-slate-100/30 border">
             <Link href="/groqmenu/groqfrontmobile">
               Groq chat simple

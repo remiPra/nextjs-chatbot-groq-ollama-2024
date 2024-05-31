@@ -20,6 +20,8 @@
     "axios": "^1.6.8",
     "chromadb": "^1.8.1",
     "howler": "^2.2.4",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^2.5.1",
     "langchain": "^0.1.30",
     "leva": "^0.9.35",
     "modelfusion": "^0.137.0",

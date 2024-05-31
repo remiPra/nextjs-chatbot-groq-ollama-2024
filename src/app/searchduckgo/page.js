@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Audio } from 'react-loader-spinner'
 import SpeechRecognitionComponent from '../component/SpeechRecognitionComponent';
+import { Howl } from 'howler';
 
 
 const Page = () => {
@@ -12,22 +13,22 @@ const Page = () => {
     const [answer, setAnswer] = useState("");
     const [isLoading, setIsLoading] = useState(false);  // Ajout de l'état isLoading
     const [speakchoice, setspeakchoice] = useState(false)
+    const [voice,setVoice] = useState()
 
+    // useEffect   (() => {
+    //     const synth = window.speechSynthesis;
+    //     const setVoiceList = () => {
+    //         setVoice(synth.getVoices().find(v => v.lang.startsWith('fr')) || synth.getVoices()[0]); // Préférez une voix française
+    //     };
 
-    useEffect(() => {
-        const synth = window.speechSynthesis;
-        const setVoiceList = () => {
-            setVoice(synth.getVoices().find(v => v.lang.startsWith('fr')) || synth.getVoices()[0]); // Préférez une voix française
-        };
+    //     if (synth.onvoiceschanged !== undefined) {
+    //         synth.onvoiceschanged = setVoiceList;
+    //     }
 
-        if (synth.onvoiceschanged !== undefined) {
-            synth.onvoiceschanged = setVoiceList;
-        }
-
-        return () => {
-            synth.onvoiceschanged = null;
-        };
-    }, []);
+    //     return () => {
+    //         synth.onvoiceschanged = null;
+    //     };
+    // }, []);
 
 
 
@@ -201,7 +202,7 @@ const Page = () => {
                             <SpeechRecognitionComponent language="fr-FR" onTranscriptUpdate={handleTranscriptUpdate} />
 
                             <input
-                                className="w-[300px] p-2 border border-gray-300 rounded shadow-xl"
+                                className="w-[150px]  md:w-[300px] p-2 border border-gray-300 rounded shadow-xl"
                                 value={input}
                                 placeholder="Dites quelque chose"
                                 onChange={handleInputChange}
