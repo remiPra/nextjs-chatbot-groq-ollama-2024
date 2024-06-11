@@ -81,6 +81,7 @@ const Page = () => {
   };
 
   const handleSynthesize = async (text) => {
+    console.log(text)
     setError(null);
     setAudioSrc(null); // Réinitialiser l'URL audio
     try {

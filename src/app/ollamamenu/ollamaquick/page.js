@@ -1,4 +1,4 @@
-'use client';
+'use client'
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import SpeechRecognitionComponent from '@/app/component/SpeechRecognitionComponent';
@@ -8,18 +8,28 @@ import { Audio } from 'react-loader-spinner';
 const Page = () => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
+  const [voice, setVoice] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [audioQueue, setAudioQueue] = useState([]);
+  const [audioQueue, setAudioQueue] = useState([]); // File d'attente des URL audio
   const audioRef = useRef(null);
-  const [audioSrc, setAudioSrc] = useState(null);
-  const isPlayingRef = useRef(false);
+  const cancelTokenSource = useRef(axios.CancelToken.source());
+  const [stopQueueAudio, setStopQueueAudio] = useState(false);
 
   useEffect(() => {
-    if (audioSrc && audioRef.current) {
-      audioRef.current.play();
+    const synth = window.speechSynthesis;
+    const setVoiceList = () => {
+      setVoice(synth.getVoices().find(v => v.lang.startsWith('fr')) || synth.getVoices()[0]); // Préférez une voix française
+    };
+
+    if (synth.onvoiceschanged !== undefined) {
+      synth.onvoiceschanged = setVoiceList;
     }
-  }, [audioSrc]);
+
+    return () => {
+      synth.onvoiceschanged = null;
+    };
+  }, []);
 
   const handleInputChange = (e) => {
     setInput(e.target.value);
@@ -29,67 +39,97 @@ const Page = () => {
     setInput(transcript);
   };
 
+  const [preset, setPreset] = useState(0);
+
   const sendMessage = async () => {
-    setIsLoading(true);
+    setIsLoading(true);  // Commencer le chargement
+    console.log('Sending message...');
+    setStopQueueAudio(false); // Réinitialiser le drapeau avant la synthèse
+
+    if (preset === 0) {
+      setInput(`adopte le role de Gova , un vieux sage templier  , réponds succintement aux questions en 10 mots maximum, commence par te présenter`);
+      setPreset(1);
+    }
 
     if (input.trim() !== '') {
       try {
-        const newMessage = { role: 'user', content: input };
+        let newMessage = { role: 'user', content: input };
         const updatedMessages = [...messages, newMessage];
         setMessages(updatedMessages);
         setInput('');
 
         const response = await axios.post('http://localhost:11434/api/chat', {
           model: 'llama3:8b',
-          messages: [...messages, newMessage],
+          messages: updatedMessages,
           stream: false
         });
 
         const assistantMessage = response.data.message.content;
         setMessages((prevMessages) => [...prevMessages, { role: 'assistant', content: assistantMessage }]);
-        handleSynthesizeSegments(assistantMessage);
+        handleSynthesize(assistantMessage);
       } catch (error) {
         console.error('Error:', error);
       }
     }
-
-    setIsLoading(false);
+    setIsLoading(false);  // Arrêter le chargement
   };
 
-  const handleSynthesizeSegments = async (text) => {
-    const segments = text.split(/(?<=[.!?])\s+/); // Segmenter le texte en phrases
-    setError(null);
-    setAudioQueue([]); // Réinitialiser la file d'attente audio
-
-    for (const segment of segments) {
-      await handleSynthesize(segment); // Attendre que chaque synthèse se termine avant de commencer la suivante
-    }
-
-    if (!isPlayingRef.current) {
-      playNextAudio();
-    }
+  const segmentText = (text) => {
+    return text.split(/(?<=[.!?])\s+/);
   };
 
   const handleSynthesize = async (text) => {
-    try {
-      const response = await axios.post('http://127.0.0.1:8010/synthesize', {
-        text: text,
-        language: "fr",
-        ref_speaker_wav: "speakers/delesquin.mp3",
-        options: {
-          temperature: 0.75,
-          length_penalty: 1,
-          repetition_penalty: 4.8,
-          top_k: 50,
-          top_p: 0.85,
-          speed: 1.0
-        }
-      }, { responseType: 'blob' });
+    setError(null);
+    const sentences = segmentText(text);
 
-      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'audio/wav' }));
-      setAudioQueue(prevQueue => [...prevQueue, url]);
-    } catch (err) {
-      setError(err.response ? err.response.data : "An error occurred");
+    for (let sentence of sentences) {
+      if (stopQueueAudio) {
+        // Arrêter l'exécution si stopQueueAudio est vrai
+        console.log('Stopped due to stopQueueAudio flag.');
+        return; // Sortir complètement de la fonction en cas d'arrêt
+      }
+      try {
+        const response = await axios.post('http://127.0.0.1:8010/synthesize', {
+          text: sentence,
+          language: "fr",
+          ref_speaker_wav: "speakers/kevin.mp3",
+          options: {
+            temperature: 0.75,
+            length_penalty: 1,
+            repetition_penalty: 4.8,
+            top_k: 50,
+            top_p: 0.85,
+            speed: 1.0
+          }
+        }, {
+          responseType: 'blob',
+          cancelToken: cancelTokenSource.current.token,
+        });
+
+        const url = window.URL.createObjectURL(new Blob([response.data], { type: 'audio/wav' }));
+        setAudioQueue(prevQueue => [...prevQueue, url]);
+      } catch (err) {
+        if (axios.isCancel(err)) {
+          console.log('Request canceled:', err.message);
+        } else {
+          setError(err.response ? err.response.data : "An error occurred");
+        }
+        break;
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (audioQueue.length > 0 && audioRef.current && audioRef.current.paused) {
+      audioRef.current.src = audioQueue[0];
+      audioRef.current.play();
+    }
+  }, [audioQueue]);
+
+  const handleAudioEnded = () => {
+    setAudioQueue(prevQueue => prevQueue.slice(1));
+    if (audioQueue.length <= 1) {
+      setStopQueueAudio(true); // Marquer la fin de la queue si la queue est vide ou qu'il ne reste qu'un élément
     }
   };
 
@@ -104,23 +144,32 @@ const Page = () => {
       audioRef.current.pause();
       audioRef.current.currentTime = 0; // Rewind to the start
     }
-    isPlayingRef.current = false;
+    setAudioQueue([]);
+    setStopQueueAudio(true); // Activer le drapeau pour arrêter la file d'attente
+    cancelTokenSource.current.cancel('Operation canceled by the user.');
+    cancelTokenSource.current = axios.CancelToken.source(); // Réinitialiser le jeton d'annulation
+    console.log('Audio stopped and queue cleared.');
   };
 
-  const playNextAudio = () => {
-    if (audioQueue.length > 0) {
-      const nextAudioSrc = audioQueue.shift();
-      setAudioSrc(nextAudioSrc);
-      setAudioQueue([...audioQueue]);
-      isPlayingRef.current = true;
-    } else {
-      isPlayingRef.current = false;
+  const [voiceStart, setVoiceStart] = useState(false);
+  const [talk, setTalk] = useState(true);
+  const [micro, setMicro] = useState(true);
+
+  useEffect(() => {
+    console.log('stopQueueAudio changed to:', stopQueueAudio);
+  }, [stopQueueAudio]);
+
+  useEffect(() => {
+    // Si stopQueueAudio est mis à jour, cela signifie que l'utilisateur a cliqué sur "Stop"
+    if (stopQueueAudio) {
+      // Réinitialiser stopQueueAudio après un court délai pour permettre les futures synthèses
+      const timer = setTimeout(() => {
+        setStopQueueAudio(false);
+      }, 500); // 500 ms de délai
+
+      return () => clearTimeout(timer); // Nettoyer le délai si le composant est démonté
     }
-  };
-
-  const handleAudioEnded = () => {
-    playNextAudio();
-  };
+  }, [stopQueueAudio]);
 
   return (
     <>
@@ -149,10 +198,19 @@ const Page = () => {
             />
           </div>
           <div className='flex justify-center mt-8'>
-            <SpeechRecognitionComponent language="fr-FR" onTranscriptUpdate={handleTranscriptUpdate} />
-            <button onClick={sendMessage} className="mx-2 flex justify-center items-center p-2 rounded-full bg-red-900 text-gray-100 focus:outline-none">
-              <LuSendHorizonal size='8em' />
-            </button>
+            {!voiceStart && <>
+              <SpeechRecognitionComponent language="fr-FR" onTranscriptUpdate={handleTranscriptUpdate} />
+              <button onClick={sendMessage} className="mx-2 flex justify-center items-center p-2 rounded-full bg-red-900 text-gray-100 focus:outline-none">
+                <LuSendHorizonal size='8em' />
+              </button>
+            </>}
+            {voiceStart &&
+              <button onClick={() => {
+                handleStopAudio();
+              }} className="mx-2 flex justify-center items-center p-2 rounded-full bg-gray-700 text-white focus:outline-none">
+                Stop Audio
+              </button>
+            }
           </div>
         </div>
         :
@@ -169,23 +227,17 @@ const Page = () => {
         </div>
       }
 
-      {audioSrc && (
-        <>
-          <audio
-            controls
-            autoPlay
-            ref={audioRef}
-            onEnded={handleAudioEnded}
-            src={audioSrc}
-          >
-            Your browser does not support the audio element.
-          </audio>
-          <div className="fixed bottom-10 w-full flex justify-center space-x-4">
-            <button onClick={handlePauseAudio} className="bg-yellow-500 text-white p-2 rounded">Pause</button>
-            <button onClick={handleStopAudio} className="bg-red-500 text-white p-2 rounded">Stop</button>
-          </div>
-        </>
-      )}
+      {/* Ajouter l'élément audio pour jouer le son synthétisé */}
+      <audio ref={audioRef} onEnded={handleAudioEnded}>
+        Your browser does not support the audio element.
+      </audio>
+
+      <div className="fixed bottom-10 w-full flex justify-center space-x-4">
+        <button onClick={handlePauseAudio} className="bg-yellow-500 text-white p-2 rounded">Pause</button>
+        <button onClick={handleStopAudio} className="bg-red-500 text-white p-2 rounded">Stop</button>
+      </div>
+
+      {error && <div className="error">{error}</div>}
     </>
   );
 };

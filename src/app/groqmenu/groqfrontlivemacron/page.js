@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import SpeechRecognitionComponent from '@/app/component/SpeechRecognitionComponent';
 import { LuSendHorizonal } from "react-icons/lu";
@@ -11,6 +11,8 @@ const Page = () => {
   const [voice, setVoice] = useState(null);
   const [voiceStart, setVoiceStart] = useState(false);
   const [audioReady, setAudioReady] = useState(false);
+  const audioRef = useRef(null);
+
 
   useEffect(() => {
     const synth = window.speechSynthesis;
@@ -38,7 +40,7 @@ const Page = () => {
   const sendMessage = async () => {
     if (input.trim() !== '') {
       try {
-        const newMessage = { role: 'user', content: input };
+        const newMessage = { role: 'user', content: input + 'réponds en 8 mots maximum' };
         const updatedMessages = [...messages, newMessage];
         setMessages(updatedMessages);
         setInput('');
@@ -57,13 +59,38 @@ const Page = () => {
 
         const assistantMessage = response.data.choices[0].message.content;
         setMessages((prevMessages) => [...prevMessages, { role: 'assistant', content: assistantMessage }]);
-        speak(assistantMessage);
+        handleSynthesize(assistantMessage);
       } catch (error) {
         console.error('Error:', error);
       }
     }
   };
+  const [error, setError] = useState(null);
+  const [audioSrc, setAudioSrc] = useState('index');
+  const handleSynthesize = async (text) => {
+    setError(null);
+    setAudioSrc(null); // Réinitialiser l'URL audio
+    try {
+      const response = await axios.post('http://127.0.0.1:8010/synthesize', {
+        text: text,
+        language: "fr",
+        ref_speaker_wav: "speakers/macron.wav",
+        options: {
+          temperature: 0.75,
+          length_penalty: 1,
+          repetition_penalty: 4.8,
+          top_k: 50,
+          top_p: 0.85,
+          speed: 1.0
+        }
+      }, { responseType: 'blob' });
 
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'audio/wav' }));
+      setAudioSrc(url);
+    } catch (err) {
+      setError(err.response ? err.response.data : "An error occurred");
+    }
+  };
   const speak = (text) => {
     if (window.speechSynthesis && voice) {
       setVoiceStart(true);
@@ -126,6 +153,12 @@ const Page = () => {
               Stop Audio
             </button>
           )}
+            {audioSrc && (
+        <audio className='hidden'controls autoPlay key={audioSrc} ref={audioRef}>
+          <source src={audioSrc} type="audio/wav" />
+          Your browser does not support the audio element.
+        </audio>
+      )}
         </div>
       </div>
     </>

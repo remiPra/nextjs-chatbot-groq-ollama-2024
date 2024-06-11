@@ -57,7 +57,7 @@ const Page = () => {
       const response = await axios.post('http://127.0.0.1:8010/synthesize', {
         text: input,
         language: "fr",
-        ref_speaker_wav: "speakers/kevin.mp3",
+        ref_speaker_wav: "speakers/soral32.wav",
         options: {
           temperature: 0.75,
           length_penalty: 1,
