@@ -238,6 +238,10 @@ const Page = () => {
       </div>
 
       {error && <div className="error">{error}</div>}
+      <audio className='bg-red-100' controls autoPlay>
+        <source className='bg-red-100'  src="/ambiance.mp3" type="audio/mp3" />
+        Your browser does not support the audio element.
+      </audio>
     </>
   );
 };

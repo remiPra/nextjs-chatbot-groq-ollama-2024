@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FaMicrophone } from "react-icons/fa";
 
-const SpeechRecognitionLive = ({ onTranscriptUpdate, language,onsend }) => {
+const SpeechRecognitionLive = ({ onTranscriptUpdate, language, onsend }) => {
   const [listening, setListening] = useState(false);
   const [permissionGranted, setPermissionGranted] = useState(false);
   const [isRecordingSeries, setIsRecordingSeries] = useState(false);
@@ -23,24 +23,25 @@ const SpeechRecognitionLive = ({ onTranscriptUpdate, language,onsend }) => {
           const lastResult = event.results[event.resultIndex];
           if (lastResult.isFinal) {
             const newTranscript = lastResult[0].transcript.trim();
-            console.log('New word added:', newTranscript); // Log the new word
-
             if (isRecordingSeries) {
               setSeriesTranscript(prevTranscript => prevTranscript + ' ' + newTranscript);
             }
 
-            onTranscriptUpdate(newTranscript + ' ');
+            onTranscriptUpdate(newTranscript);
 
-            // Check for specific phrases
-            if (newTranscript.toLowerCase().includes('excuse-moi macron')) {
-              alert('Événement déclenché: excuse-moi Macron détecté!');
-              setIsRecordingSeries(true);  // Start recording the series of words
-              setSeriesTranscript('');     // Reset the series transcript
-            } else if (newTranscript.toLowerCase().includes('pardon macron')) {
-              alert('Événement terminé: pardon Macron détecté!');
-              setIsRecordingSeries(false); // Stop recording the series of words
-              console.log('Série de mots transcrits:', seriesTranscript.trim()); // Log the final series transcript
-              // You can also add additional logic here to handle the final series transcript
+            if (newTranscript.toLowerCase().includes('dieu')) {
+              if (!isRecordingSeries) {
+                setIsRecordingSeries(true);
+                setSeriesTranscript('');
+              } else {
+                setIsRecordingSeries(false);
+                onsend();
+                setSeriesTranscript('');
+              }
+            } else if (newTranscript.toLowerCase().includes('merci de répondre')) {
+              setIsRecordingSeries(false);
+              onsend();
+              setSeriesTranscript('');
             }
           }
         };
@@ -53,7 +54,6 @@ const SpeechRecognitionLive = ({ onTranscriptUpdate, language,onsend }) => {
       }
     }
 
-    // Check if permission was already granted
     navigator.permissions.query({ name: 'microphone' }).then((result) => {
       if (result.state === 'granted') {
         setPermissionGranted(true);
@@ -61,7 +61,7 @@ const SpeechRecognitionLive = ({ onTranscriptUpdate, language,onsend }) => {
     }).catch((error) => {
       console.error("Permission query error: ", error);
     });
-  }, [language, onTranscriptUpdate, isRecordingSeries, seriesTranscript]);
+  }, [language, onTranscriptUpdate, isRecordingSeries, seriesTranscript, onsend]);
 
   useEffect(() => {
     if (recognitionRef.current) {

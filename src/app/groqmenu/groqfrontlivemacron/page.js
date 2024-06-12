@@ -1,7 +1,6 @@
 'use client'
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import SpeechRecognitionComponent from '@/app/component/SpeechRecognitionComponent';
 import { LuSendHorizonal } from "react-icons/lu";
 import SpeechRecognitionLive from '@/app/component/SpeechRecognitionLive';
 
@@ -12,6 +11,7 @@ const Page = () => {
   const [voiceStart, setVoiceStart] = useState(false);
   const [audioReady, setAudioReady] = useState(false);
   const audioRef = useRef(null);
+  
 
 
   useEffect(() => {
@@ -32,18 +32,45 @@ const Page = () => {
   const handleInputChange = (e) => {
     setInput(e.target.value);
   };
-
+  const [eve,setEve] = useState("")
   const handleTranscriptUpdate = (transcript) => {
-    setInput(prevInput => prevInput + ' ' + transcript);
+    if (transcript.toLowerCase().includes('dieu')) {
+      setInput(''); // Reset input when "Dieu" is detected
+      setEve(''); // Reset input when "Dieu" is detected
+      setInputBeforeSend(''); // Réinitialiser l'état avant l'envoi
+      console.log(inputBeforeSend)
+    } else {
+      setInput(prevInput => prevInput + ' ' + transcript);
+      setEve(prevEve => prevEve + ' ' + transcript);
+      setInputBeforeSend(prevInput => prevInput + ' ' + transcript);
+      console.log(inputBeforeSend)
+     console.log(eve)
+      console.log(input)
+    }
   };
 
+  const sendtalk = () => {
+    sendMessage()
+  }
+  const [inputBeforeSend, setInputBeforeSend] = useState('');
+
+
+
+
   const sendMessage = async () => {
-    if (input.trim() !== '') {
+    console.log('bof')
+    console.log('bof')
+    const def = await console.log(eve)
+    console.log('Message à envoyer:', inputBeforeSend);
+
+    console.log(document.getElementsByName('input').value)
+    if (eve !== '') {
       try {
-        const newMessage = { role: 'user', content: input + 'réponds en 8 mots maximum' };
+        const newMessage = { role: 'user', content: inputBeforeSend + 'réponds en 20 mots maximum' };
         const updatedMessages = [...messages, newMessage];
         setMessages(updatedMessages);
         setInput('');
+        setInputBeforeSend(''); // Réinitialiser après l'envoi
 
         const data = {
           messages: updatedMessages,
@@ -91,23 +118,18 @@ const Page = () => {
       setError(err.response ? err.response.data : "An error occurred");
     }
   };
-  const speak = (text) => {
-    if (window.speechSynthesis && voice) {
-      setVoiceStart(true);
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.voice = voice;
-      utterance.onend = () => {
-        console.log("La réponse sonore est terminée.");
-        setVoiceStart(false);
-      };
-      window.speechSynthesis.speak(utterance);
-    }
-  };
 
   const handleStopAudio = () => {
     setVoiceStart(false);
     window.speechSynthesis.cancel();
   };
+
+  useEffect(() => {
+    // Vérifier si inputBeforeSend contient "merci de répondre"
+    if (inputBeforeSend.toLowerCase().includes('merci de répondre')) {
+      sendMessage(); // Appeler la fonction pour envoyer le message
+    }
+  }, [inputBeforeSend]); // Exécuter l'effet lorsque inputBeforeSend change
 
   const enableAudio = () => {
     setAudioReady(true);
@@ -141,7 +163,7 @@ const Page = () => {
         <div className='flex justify-center mt-8'>
           {!voiceStart && (
             <>
-              <SpeechRecognitionLive onsend={sendMessage} language="fr-FR" onTranscriptUpdate={handleTranscriptUpdate} />
+              <SpeechRecognitionLive  onsend={sendtalk} language="fr-FR" onTranscriptUpdate={handleTranscriptUpdate} />
               <button onClick={sendMessage} className="mx-2 flex justify-center items-center p-2 rounded-full bg-red-900 text-gray-100 focus:outline-none">
                 <LuSendHorizonal size='8em' />
               </button>
@@ -160,6 +182,7 @@ const Page = () => {
         </audio>
       )}
         </div>
+        
       </div>
     </>
   );
