@@ -57,14 +57,14 @@ const Page = () => {
       const response = await axios.post('http://127.0.0.1:8010/synthesize', {
         text: input,
         language: "fr",
-        ref_speaker_wav: "speakers/soral32.wav",
+        ref_speaker_wav: "speakers/kevin.mp3",
         options: {
           temperature: 0.75,
           length_penalty: 1,
           repetition_penalty: 4.8,
           top_k: 50,
           top_p: 0.85,
-          speed: 1.0
+          speed: 1
         }
       }, { responseType: 'blob' });
 
