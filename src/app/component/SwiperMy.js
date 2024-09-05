@@ -1,9 +1,10 @@
 // src/components/MySwiper.js
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Pagination, Navigation } from 'swiper';
+import { Pagination, Navigation } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
+
 
 const slides = [
   {
@@ -72,20 +73,20 @@ Chers archanges Saint-Michel, Gabriel et Raphaël, je vous remercie de votre aid
 Ainsi soit-il
     `,
     bgColor: "bg-green-500"
-  },
-  {
-    title: "Prière de nettoyage des chakras et des organes",
-    content: `
-    Par la grâce des archanges Saint-Michel, Gabriel et Raphaël (Uriel, Shiva …), je demande que tous les chakras (racine, sacré, plexus solaire, cœur, gorge, 3ème œil, coronal) de …………………… (prénom nom), glandes endocrines et organes de …………………… (prénom nom) soit nettoyés et libérés de toute souillure, impureté (magie noire, racines de possession, implants), entités et âmes désincarnées. Que les entités et les âmes rejoignent maintenant les royaumes de l’indicible et de la lumière.
+  }
+//   {
+//     title: "Prière de nettoyage des chakras et des organes",
+//     content: `
+//     Par la grâce des archanges Saint-Michel, Gabriel et Raphaël (Uriel, Shiva …), je demande que tous les chakras (racine, sacré, plexus solaire, cœur, gorge, 3ème œil, coronal) de …………………… (prénom nom), glandes endocrines et organes de …………………… (prénom nom) soit nettoyés et libérés de toute souillure, impureté (magie noire, racines de possession, implants), entités et âmes désincarnées. Que les entités et les âmes rejoignent maintenant les royaumes de l’indicible et de la lumière.
 
-Ainsi purifié dans tout son être, …………………… (prénom nom) se remet dans l’énergie d’amour de la Source créatrice de pure Lumière.
+// Ainsi purifié dans tout son être, …………………… (prénom nom) se remet dans l’énergie d’amour de la Source créatrice de pure Lumière.
 
-Chers archanges Saint-Michel, Gabriel et Raphaël, je vous remercie de votre aide.
+// Chers archanges Saint-Michel, Gabriel et Raphaël, je vous remercie de votre aide.
 
-Ainsi soit-il
-    `,
-    bgColor: "bg-green-500"
-  },
+// Ainsi soit-il
+//     `,
+//     bgColor: "bg-green-500"
+//   }
 ];
 
 const MySwiper = () => {
@@ -94,7 +95,7 @@ const MySwiper = () => {
       modules={[Pagination, Navigation]}
       spaceBetween={50}
       slidesPerView={1}
-      navigation
+      // navigation
       pagination={{ clickable: true }}
       onSlideChange={() => console.log('slide change')}
       onSwiper={(swiper) => console.log(swiper)}

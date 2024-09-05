@@ -1,22 +1,20 @@
 'use client'
 
-import SwiperMy from "@/app/component/SwiperMy";
+// import SwiperMy from "@/app/component/SwiperMy";
+import dynamic from 'next/dynamic'
 
+const SwiperMy = dynamic(() => import('@/app/component/SwiperMy'), { ssr: false })
 
 const Page = () => {
-    const cards = [
-        <div className="bg-red-500 text-white w-full h-full flex items-center justify-center">Card 1</div>,
-        <div className="bg-blue-500 text-white w-full h-full flex items-center justify-center">Card 2</div>,
-        <div className="bg-green-500 text-white w-full h-full flex items-center justify-center">Card 3</div>,
-      ];
-    
 
-    return (<>
-        <div className='mt-[80px] mb-[30px]'>
-            
-        </div>
-        <SwiperMy cards={cards} />
-        {/* <div>
+
+
+  return (<>
+    <div className='mt-[80px] mb-[30px]'>
+
+    </div>
+    <SwiperMy />
+    {/* <div>
             <h2>douche de lumière  </h2>
             <pre>
 
@@ -25,12 +23,12 @@ const Page = () => {
             </pre>
         </div> */}
 
-<audio className='bg-red-100' controls autoPlay>
-        <source className='bg-red-100'  src="/ambiance.mp3" type="audio/mp3" />
-        Your browser does not support the audio element.
-      </audio>
-    </>
-    )
+    <audio className='bg-red-100' controls autoPlay>
+      <source className='bg-red-100' src="/ambiance.mp3" type="audio/mp3" />
+      Your browser does not support the audio element.
+    </audio>
+  </>
+  )
 }
 
 export default Page;
