@@ -1,7 +1,5 @@
-
 'use client';
 import { Canvas } from "@react-three/fiber";
-import { Mesh } from 'three';
 
 function Box(props) {
   const handleClick = (e) => {
@@ -20,4 +18,4 @@ function Box(props) {
   );
 }
 
-export default Box
+export default Box;

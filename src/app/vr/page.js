@@ -1,21 +1,28 @@
 'use client'
-import { Canvas } from "@react-three/fiber";
-import { Experience } from "../component/Experience";
-import { ARButton, XR, Controllers, Hands, VRButton } from '@react-three/xr'
-import { OrbitControls } from "@react-three/drei";
+import React, { useState } from 'react';
+import { Canvas } from '@react-three/fiber';
+import { Experience } from '../component/Experience';
 
 function Page() {
+  const [isPlaying, setIsPlaying] = useState(true);
+
+  const toggleAnimation = () => {
+    setIsPlaying(!isPlaying);
+  };
+
   return (
-    <div style={{ height: '100vh' }}>
-
+    <div style={{ height: '100vh', position: 'relative' }}>
       <Canvas shadows camera={{ position: [0, 0, 100], fov: 42 }}>
-        <XR>
-          <color attach="background" args={["#ececec"]} />
-          <Experience />
-          {/* <VRButton/> */}
-
-        </XR>
+        <color attach="background" args={["#ececec"]} />
+        <Experience toggleAnimation={isPlaying} />
       </Canvas>
+      <button
+        onClick={toggleAnimation}
+        style={{ position: 'absolute', top: '100px', left: '100px', zIndex: 1 }}
+        className='border-r-red-500'
+      >
+        {isPlaying ? 'Stop Animation' : 'Play Animation'}
+      </button>
     </div>
   );
 }

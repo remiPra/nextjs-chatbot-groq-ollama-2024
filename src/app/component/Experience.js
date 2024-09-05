@@ -1,18 +1,35 @@
+import React, { useState } from 'react';
+import { Environment, OrbitControls, useTexture } from '@react-three/drei';
+import { useThree } from '@react-three/fiber';
+import Model from './Model';
 
-import { Environment, OrbitControls, useTexture } from "@react-three/drei";
-import { useThree } from "@react-three/fiber";
-import { Avatar } from "./Avatar";
-import Box from "./3d/Box";
+// Synthèse vocale avec Web Speech API
+const speak = (text) => {
+  return new Promise((resolve) => {
+    const synth = window.speechSynthesis;
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'fr-FR';
+    utterance.onend = resolve;
+    synth.speak(utterance);
+  });
+};
 
-export function Experience() {
-  const texture = useTexture("models/background.png");
+export function Experience({ toggleAnimation }) {
+  const texture = useTexture('models/background.png');
   const viewport = useThree((state) => state.viewport);
+  const [text, setText] = useState('');
+  const [visemes, setVisemes] = useState([]);
+
+  const handleSpeak = async () => {
+    await speak(text);
+    const visemeData = await getLipSyncData(text);
+    setVisemes(visemeData);
+  };
 
   return (
     <>
-      <OrbitControls />
-      <Avatar position={[0, -30, 50]} scale={20} />
-      <Box position={[-10, 0, 50]}/>
+      <OrbitControls enableZoom={true} enableRotate={false} enablePan={false} />
+      <Model position={[0, -80, 50]} scale={50} isPlaying={toggleAnimation} />
       <Environment preset="sunset" />
       <mesh>
         <planeGeometry args={[viewport.width, viewport.height]} />
@@ -20,4 +37,6 @@ export function Experience() {
       </mesh>
     </>
   );
-};
+}
+
+export default Experience;

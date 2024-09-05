@@ -12,8 +12,8 @@
     "@langchain/groq": "^0.0.4",
     "@langchain/openai": "^0.0.26",
     "@modelfusion/vercel-ai": "^1.1.0",
-    "@react-three/drei": "9.75.0",
-    "@react-three/fiber": "8.13.3",
+    "@react-three/drei": "^9.75.0",
+    "@react-three/fiber": "^8.13.3",
     "@react-three/xr": "^5.7.1",
     "@types/three": "0.152.1",
     "@use-gesture/react": "^10.3.1",
@@ -40,9 +40,10 @@
     "react-swipe-card": "^0.1.4",
     "react-swipeable": "^7.0.1",
     "react-transition-group": "^4.4.5",
+    "rhubarb-lip-sync": "^0.0.1-alfa-3",
     "speech-synthesis": "^0.3.2",
     "swiper": "^11.1.4",
-    "three": "0.153.0"
+    "three": "^0.153.0"
   },
   "devDependencies": {
     "autoprefixer": "^10.0.1",
