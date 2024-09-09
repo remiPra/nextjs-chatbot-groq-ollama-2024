@@ -43,6 +43,7 @@ const Page = () => {
   const [lo,setLo] = useState(0)
   const sendMessage = async () => {
     setIsLoading(true);  // Commencer le chargement
+    setBackground(false)
     console.log('Sending message...');
     setStopQueueAudio(false); // Réinitialifgroqser le drapeau avant la synthèse
 
@@ -184,6 +185,7 @@ const Page = () => {
   };
 
   const handleStopAudio = () => {
+    setBackground(true)
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0; // Rewind to the start
@@ -198,7 +200,7 @@ const Page = () => {
   const [voiceStart, setVoiceStart] = useState(false);
   const [talk, setTalk] = useState(true);
   const [micro, setMicro] = useState(true);
-
+  const [background,setBackground]=useState(false)
   useEffect(() => {
     console.log('stopQueueAudio changed to:', stopQueueAudio);
   }, [stopQueueAudio]);
@@ -278,7 +280,10 @@ const Page = () => {
 
       <div className="fixed bottom-10 w-full flex justify-center space-x-4">
         <button onClick={handlePauseAudio} className="bg-yellow-500 text-white p-2 rounded">Pause</button>
+        {background ? 
         <button onClick={handleStopAudio} className="bg-red-500 text-white p-2 rounded">Stop</button>
+     :   <button onClick={handleStopAudio} className="bg-blue-500 text-white p-2 rounded">Stop</button>
+    }
       </div>
 
       {error && <div className="error">{error}</div>}
