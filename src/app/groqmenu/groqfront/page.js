@@ -91,7 +91,7 @@ voila je veux la meme chose dasn rédaction avec la meme structuer et le meme la
         const response = await axios.post('https://api.groq.com/openai/v1/chat/completions', data, {
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_GROQ_API_KEY}`,
+            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_GROQ_API_KEY}`
           },
         });
 

@@ -14,6 +14,7 @@ const Page = () => {
   const [audioQueue, setAudioQueue] = useState([]);
   const [stopQueueAudio, setStopQueueAudio] = useState(false);
   const [voiceStart, setVoiceStart] = useState(false);
+  const [background, setBackground] = useState(false);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [preset, setPreset] = useState(0);
   const [lo, setLo] = useState(0);
@@ -47,29 +48,27 @@ const Page = () => {
 
   useEffect(() => {
     if (videoRef.current) {
-      videoRef.current.src = isAudioPlaying ? "/macrontalking.mp4" : "/macron.mp4";
+      videoRef.current.src = isAudioPlaying ? "/girlfriendtalking.mp4" : "/girlfriend.mp4";
       videoRef.current.load();
-      videoRef.current.play();
+      videoRef.current.play().catch(e => console.error("Erreur de lecture vidéo:", e));
     }
   }, [isAudioPlaying]);
 
   useEffect(() => {
+    console.log('Audio queue changed:', audioQueue);
     if (audioQueue.length > 0 && audioRef.current && audioRef.current.paused) {
+      console.log('Starting playback from queue change');
       audioRef.current.src = audioQueue[0];
-      audioRef.current.play();
+      audioRef.current.play().catch(e => console.error("Erreur de lecture audio:", e));
     }
   }, [audioQueue]);
 
   useEffect(() => {
     console.log('stopQueueAudio changed to:', stopQueueAudio);
-  }, [stopQueueAudio]);
-
-  useEffect(() => {
     if (stopQueueAudio) {
       const timer = setTimeout(() => {
         setStopQueueAudio(false);
       }, 500);
-
       return () => clearTimeout(timer);
     }
   }, [stopQueueAudio]);
@@ -84,11 +83,12 @@ const Page = () => {
 
   const sendMessage = async () => {
     setIsLoading(true);
+    setBackground(false);
     setStopQueueAudio(false);
     console.log('Sending message...');
 
     if (preset === 0) {
-      setInput(`adopte le role d'emmanuel macron, réponds succintement aux questions en 10 mots maximum, commence par te présenter`);
+      setInput(`adopte le role de Gova , un vieux sage templier  , réponds succintement aux questions en 10 mots maximum, commence par te présenter`);
       setPreset(1);
     }
 
@@ -100,7 +100,9 @@ const Page = () => {
           console.log(lo);
           newMessage = {
             role: 'user',
-            content: `adopte le role d'emmanuel macron. Tes réponses doivent être comme si on avait une discussion. Réponds si tu as compris : "Je suis le président français"`
+            content: `adopte le role de ma petite amie francaise , Julie .
+            tes réponses doivent etre comme si on avait une discussion, parle comme si julie le faisait   .
+            réponds si tu as compris : " salut mon chérie"`
           };
         } else {
           newMessage = { role: 'user', content: input };
@@ -111,6 +113,8 @@ const Page = () => {
 
         const data = {
           messages: updatedMessages,
+          // model: 'mixtral-8x7b-32768',
+          // model: 'llama3-groq-70b-8192-tool-use-preview',
           model: 'llama-3.1-70b-versatile',
         };
 
@@ -123,7 +127,7 @@ const Page = () => {
 
         const assistantMessage = response.data.choices[0].message.content;
         setMessages((prevMessages) => [...prevMessages, { role: 'assistant', content: assistantMessage }]);
-        handleSynthesize(assistantMessage);
+        await handleSynthesize(assistantMessage);
       } catch (error) {
         console.error('Error:', error);
       }
@@ -132,14 +136,20 @@ const Page = () => {
   };
 
   const segmentText = (text) => {
-    return text.split(/(?<=[.!?])\s+/);
+    const sentences = text.split(/(?<=[.!?])\s+/).filter(sentence => sentence.trim() !== '');
+    console.log('Segmented text:', sentences);
+    return sentences;
   };
 
   const handleSynthesize = async (text) => {
     setError(null);
     const sentences = segmentText(text);
+    console.log('Sentences to synthesize:', sentences);
 
-    for (let sentence of sentences) {
+    for (let i = 0; i < sentences.length; i++) {
+      const sentence = sentences[i];
+      console.log(`Processing sentence ${i + 1}/${sentences.length}:`, sentence);
+      
       if (stopQueueAudio) {
         console.log('Stopped due to stopQueueAudio flag.');
         return;
@@ -148,7 +158,7 @@ const Page = () => {
         const response = await axios.post('http://127.0.0.1:8010/synthesize', {
           text: sentence,
           language: "fr",
-          ref_speaker_wav: "speakers/macron.wav",
+          ref_speaker_wav: "speakers/calm_female.wav",
           options: {
             temperature: 0.75,
             length_penalty: 1,
@@ -163,23 +173,38 @@ const Page = () => {
         });
 
         const url = window.URL.createObjectURL(new Blob([response.data], { type: 'audio/wav' }));
+        console.log(`Adding to queue (${i + 1}/${sentences.length}):`, url);
         setAudioQueue(prevQueue => [...prevQueue, url]);
       } catch (err) {
         if (axios.isCancel(err)) {
           console.log('Request canceled:', err.message);
         } else {
+          console.error(`Error processing sentence ${i + 1}:`, err);
           setError(err.response ? err.response.data : "An error occurred");
         }
         break;
       }
     }
+    console.log('Finished processing all sentences');
   };
 
   const handleAudioEnded = () => {
-    setAudioQueue(prevQueue => prevQueue.slice(1));
-    if (audioQueue.length <= 1) {
-      setStopQueueAudio(true);
-    }
+    setAudioQueue(prevQueue => {
+      const newQueue = prevQueue.slice(1);
+      console.log('Audio ended. New queue:', newQueue);
+      if (newQueue.length > 0) {
+        console.log('Playing next audio');
+        if (audioRef.current) {
+          audioRef.current.src = newQueue[0];
+          audioRef.current.play().catch(e => console.error("Erreur de lecture audio:", e));
+        }
+      } else {
+        console.log('Queue is empty, stopping');
+        setStopQueueAudio(true);
+        setIsAudioPlaying(false);
+      }
+      return newQueue;
+    });
   };
 
   const handlePauseAudio = () => {
@@ -189,12 +214,14 @@ const Page = () => {
   };
 
   const handleStopAudio = () => {
+    setBackground(true);
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
     }
     setAudioQueue([]);
     setStopQueueAudio(true);
+    setIsAudioPlaying(false);
     cancelTokenSource.current.cancel('Operation canceled by the user.');
     cancelTokenSource.current = axios.CancelToken.source();
     console.log('Audio stopped and queue cleared.');
@@ -203,7 +230,7 @@ const Page = () => {
   return (
     <div className="flex h-screen">
       {/* Côté gauche pour le film */}
-      <div className="w-1/3 overflow-hidden bg-black flex items-center justify-center">
+      <div className="w-full md:w-1/3 overflow-hidden bg-black flex items-center justify-center">
         <video 
           ref={videoRef}
           className="w-[100%] mt-[110px] h-full object-cover"
@@ -214,10 +241,49 @@ const Page = () => {
         >
           Votre navigateur ne supporte pas la balise vidéo.
         </video>
+                
+        {!isLoading ? (
+          <div className="absolute md:hidden bottom-20 w-full px-4">
+            <div className="flex justify-center">
+              <input
+                className="w-full p-2 border border-gray-300 rounded shadow-xl"
+                value={input}
+                placeholder="Dites quelque chose"
+                onChange={handleInputChange}
+              />
+            </div>
+            <div className='flex justify-center mt-4'>
+              {!voiceStart && (
+                <>
+                  <SpeechRecognitionComponent language="fr-FR" onTranscriptUpdate={handleTranscriptUpdate} />
+                  <button onClick={sendMessage} className="mx-2 flex justify-center items-center p-2 rounded-full bg-red-900 text-gray-100 focus:outline-none">
+                    <LuSendHorizonal size='2em' />
+                  </button>
+                </>
+              )}
+              {voiceStart && (
+                <button onClick={handleStopAudio} className="mx-2 flex justify-center items-center p-2 rounded-full bg-gray-700 text-white focus:outline-none">
+                  Stop Audio
+                </button>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="md:absolute hidden inset-0 bg-slate-100 md:flex justify-center items-center">
+            <Audio
+              height="80"
+              width="80"
+              radius="9"
+              color="blue"
+              ariaLabel="loading"
+            />
+          </div>
+        )}
+
       </div>
 
       {/* Côté droit pour l'écran principal */}
-      <div className="w-2/3 flex flex-col relative">
+      <div className="hidden w-0 md:w-2/3 md:flex flex-col relative">
         <div className="flex-grow overflow-y-auto py-24 px-4">
           {messages.map((message, index) => (
             <div
@@ -272,13 +338,17 @@ const Page = () => {
         <audio 
           ref={audioRef} 
           onEnded={handleAudioEnded}
+          onPlay={() => setIsAudioPlaying(true)}
+          onPause={() => setIsAudioPlaying(false)}
         >
           Your browser does not support the audio element.
         </audio>
 
         <div className="absolute bottom-4 w-full flex justify-center space-x-4">
           <button onClick={handlePauseAudio} className="bg-yellow-500 text-white p-2 rounded">Pause</button>
-          <button onClick={handleStopAudio} className="bg-red-500 text-white p-2 rounded">Stop</button>
+          <button onClick={handleStopAudio} className={`${background ? 'bg-blue-500' : 'bg-red-500'} text-white p-2 rounded`}>
+            Stop
+          </button>
         </div>
       </div>
 
