@@ -40,19 +40,19 @@ export default function Chat() {
             <div className="z-10 max-w-[300px] m-3  flex space-y-6 flex-col bg-gradient-to-tr  from-slate-300/30 via-gray-400/30 to-slate-600-400/30 p-4  backdrop-blur-md rounded-xl border-slate-100/30 border">
 
                 <Link
-                    href="/priere"
+                    href="/openai/podologue"
                     className={textButton}
                 >
-                    Prieres
+                    Podologue
                 </Link>
             </div>
             <div className="z-10 max-w-[300px] m-3  flex space-y-6 flex-col bg-gradient-to-tr  from-slate-300/30 via-gray-400/30 to-slate-600-400/30 p-4  backdrop-blur-md rounded-xl border-slate-100/30 border">
 
                 <Link
-                    href="/openai"
+                    href="/openai/sage"
                     className={textButton}
                 >
-                    Openai
+                    Sage
                 </Link>
             </div>
         </div>

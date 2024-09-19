@@ -1,4 +1,4 @@
-'use client'
+ 'use client'
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import { LuSendHorizonal, LuMic, LuMicOff } from "react-icons/lu";
@@ -215,32 +215,29 @@ Exemple : 'D'après ce que vous me décrivez, je pense que vous pourriez souffri
             setError(err.response ? err.response.data : "An error occurred");
         }
     };
-
     const synthesizeAudio = async (text) => {
         try {
-            const postData = {
-                input: { text: text },
-                voice: { languageCode: 'fr-FR', ssmlGender: 'MALE' },
-                audioConfig: { audioEncoding: 'MP3' },
-            };
-
-            const response = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`, {
+            const response = await fetch('https://api.openai.com/v1/audio/speech', {
                 method: 'POST',
                 headers: {
+                    'Authorization': `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`,
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(postData),
+                body: JSON.stringify({
+                    model: "tts-1",
+                    input: text,
+                    voice: "alloy",
+                }),
             });
-            const data = await response.json();
-            if (data.audioContent) {
-                const audioSrc = `data:audio/mp3;base64,${data.audioContent}`;
-                return audioSrc;
-            } else {
-                console.error('Failed to convert text to speech:', data);
-                throw new Error('Failed to synthesize audio');
+    
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
+    
+            const blob = await response.blob();
+            return URL.createObjectURL(blob);
         } catch (err) {
-            console.error('Error preloading audio:', err);
+            console.error('Error synthesizing audio:', err);
             throw err;
         }
     };
@@ -308,10 +305,10 @@ Exemple : 'D'après ce que vous me décrivez, je pense que vous pourriez souffri
                     Votre navigateur ne supporte pas la balise vidéo.
                 </video>
 
-                <div className="absolute md:hidden bottom-20 w-full px-4">
+                <div className="absolute md:hidden  bottom-2 w-full px-4">
                     <div className="flex justify-center">
                         <input
-                            className="w-full p-2 border border-gray-300 rounded shadow-xl"
+                            className="w-full p-2 bg-transparent border border-gray-300 rounded shadow-xl"
                             value={input}
                             placeholder="Dites quelque chose"
                             onChange={handleInputChange}
@@ -332,7 +329,7 @@ Exemple : 'D'après ce que vous me décrivez, je pense que vous pourriez souffri
             </div>
 
             <div className="hidden w-0 md:w-2/3 md:flex flex-col relative">
-                <div className="flex-grow overflow-y-auto py-24 px-4 ">
+                <div className="flex-grow overflow-y-auto py-24 px-4">
                     {messages.map((message, index) => (
                         <div
                             key={index}
@@ -345,10 +342,10 @@ Exemple : 'D'après ce que vous me décrivez, je pense que vous pourriez souffri
                     ))}
                 </div>
 
-                <div className="absolute bottom-20 w-full px-4">
+                <div className="absolute bottom-[1rem] md:bottom-4 w-full px-4">
                     <div className="flex justify-center">
                         <input
-                            className="w-full p-2 border border-gray-300 rounded shadow-xl"
+                            className="w-full p-2 border  border-gray-300 rounded shadow-xl"
                             value={input}
                             placeholder="Dites quelque chose"
                             onChange={handleInputChange}
