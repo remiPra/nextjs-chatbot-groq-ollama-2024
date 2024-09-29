@@ -203,14 +203,14 @@ const Page = () => {
                     Votre navigateur ne supporte pas la balise vidéo.
                 </video>
 
-                <div className="absolute md:hidden bottom-20 w-full px-4">
+                <div className="absolute md:hidden bottom-3 w-full px-4">
                     <div className="flex justify-center">
-                        <input
+                        {/* <input
                             className="w-full p-2 border border-gray-300 rounded shadow-xl"
                             value={input}
                             placeholder="Dites quelque chose"
                             onChange={handleInputChange}
-                        />
+                        /> */}
                     </div>
                     <div className='flex justify-center mt-4'>
                         <button
@@ -219,9 +219,13 @@ const Page = () => {
                         >
                             {isRecording ? <LuMicOff size='2em' /> : <LuMic size='2em' />}
                         </button>
-                        <button onClick={() => sendMessage()} className="mx-2 flex justify-center items-center p-2 rounded-full bg-red-900 text-gray-100 focus:outline-none">
+                        <button onClick={() => sendMessage()} className="mx-2 flex justify-center items-center p-4 rounded-full bg-red-900 text-gray-100 focus:outline-none">
                             <LuSendHorizonal size='2em' />
                         </button>
+                        <button onClick={handleStopAudio} 
+                        className="mx-2 flex justify-center items-center p-2 rounded-full bg-red-900 text-gray-100 focus:outline-none">
+                        Stop
+                    </button>
                     </div>
                 </div>
             </div>
@@ -259,6 +263,7 @@ const Page = () => {
                         <button onClick={() => sendMessage()} className="mx-2 flex justify-center items-center p-2 rounded-full bg-red-900 text-gray-100 focus:outline-none">
                             <LuSendHorizonal size='2em' />
                         </button>
+                        
                     </div>
                 </div>
 
