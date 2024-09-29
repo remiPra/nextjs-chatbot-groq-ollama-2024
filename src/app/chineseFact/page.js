@@ -17,6 +17,7 @@ const Page = () => {
     const cancelTokenSource = useRef(axios.CancelToken.source());
     const mediaRecorderRef = useRef(null);
     const howlRef = useRef(null);
+    const initialMessageSentRef = useRef(false);
 
     const apiKey = process.env.NEXT_PUBLIC_TEXT_SPEECH_GOOGLE;
 
@@ -34,6 +35,17 @@ const Page = () => {
             sendAudioToGroq();
         }
     }, [audioBlob]);
+
+    const sendInitialMessage = useCallback(async () => {
+        if (!initialMessageSentRef.current) {
+            initialMessageSentRef.current = true;
+            await sendMessage("adopte le role de nono le chien");
+        }
+    }, []);
+
+    useEffect(() => {
+        sendInitialMessage();
+    }, [sendInitialMessage]);
 
     const setDefaultVideo = () => {
         if (videoRef.current) {
@@ -102,6 +114,12 @@ const Page = () => {
     const sendMessage = async (messageText = input) => {
         if (messageText.trim() === '') return;
 
+        // Vérifiez si le message existe déjà pour éviter les doublons
+        if (messages.some(msg => msg.role === 'user' && msg.content === messageText)) {
+            console.log('Message already sent, skipping...');
+            return;
+        }
+
         setIsLoading(true);
         try {
             const newMessage = { role: 'user', content: messageText };
@@ -121,10 +139,13 @@ const Page = () => {
 
             const assistantMessage = response.data.choices[0].message.content;
             setMessages(prev => [...prev, { role: 'assistant', content: assistantMessage }]);
-            await handleSynthesize(assistantMessage);
+            
+            setTimeout(() => {
+                handleSynthesize(assistantMessage);
+            }, 1000);
         } catch (error) {
             console.error('Error:', error);
-            setError('Erreur lors de l du message: ' + error.message);
+            setError('Erreur lors de l\'envoi du message: ' + error.message);
         } finally {
             setIsLoading(false);
         }
@@ -146,7 +167,7 @@ const Page = () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 input: { text },
-                voice: { languageCode: 'fr-FR', ssmlGender: 'MALE' },
+                voice: { languageCode: 'fr-FR', ssmlGender: 'FEMALE' },
                 audioConfig: { audioEncoding: 'MP3' },
             }),
         });
@@ -204,28 +225,17 @@ const Page = () => {
                 </video>
 
                 <div className="absolute md:hidden bottom-3 w-full px-4">
-                    <div className="flex justify-center">
-                        {/* <input
-                            className="w-full p-2 border border-gray-300 rounded shadow-xl"
-                            value={input}
-                            placeholder="Dites quelque chose"
-                            onChange={handleInputChange}
-                        /> */}
-                    </div>
                     <div className='flex justify-center mt-4'>
                         <button
                             onClick={isRecording ? stopRecording : startRecording}
-                            className=" 2em mx-2 flex justify-center items-center p-2 rounded-full bg-red-900 text-gray-100 focus:outline-none"
-                    >
+                            className="2em mx-2 flex justify-center items-center p-2 rounded-full bg-red-900 text-gray-100 focus:outline-none"
+                        >
                             {isRecording ? <LuMicOff size='4em ' /> : <LuMic size='3em' />}
                         </button>
-                        {/* <button onClick={() => sendMessage()} className="mx-2 flex justify-center items-center p-4 rounded-full bg-red-900 text-gray-100 focus:outline-none">
-                            <LuSendHorizonal size='2em' />
-                        </button> */}
                         <button onClick={handleStopAudio} 
-                        className="mx-2 flex justify-center items-center p-2 rounded-full bg-red-900 text-gray-100 focus:outline-none">
-                        Stop
-                    </button>
+                            className="mx-2 flex justify-center items-center p-2 rounded-full bg-red-900 text-gray-100 focus:outline-none">
+                            Stop
+                        </button>
                     </div>
                 </div>
             </div>
@@ -263,7 +273,6 @@ const Page = () => {
                         <button onClick={() => sendMessage()} className="mx-2 flex justify-center items-center p-2 rounded-full bg-red-900 text-gray-100 focus:outline-none">
                             <LuSendHorizonal size='2em' />
                         </button>
-                        
                     </div>
                 </div>
 
