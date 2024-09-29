@@ -12,12 +12,14 @@ const Page = () => {
     const [isAudioPlaying, setIsAudioPlaying] = useState(false);
     const [isRecording, setIsRecording] = useState(false);
     const [audioBlob, setAudioBlob] = useState(null);
+    const [currentSentence, setCurrentSentence] = useState('');
 
     const videoRef = useRef(null);
     const cancelTokenSource = useRef(axios.CancelToken.source());
     const mediaRecorderRef = useRef(null);
     const howlRef = useRef(null);
     const initialMessageSentRef = useRef(false);
+    const sentencesRef = useRef([]);
 
     const apiKey = process.env.NEXT_PUBLIC_TEXT_SPEECH_GOOGLE;
 
@@ -39,7 +41,7 @@ const Page = () => {
     const sendInitialMessage = useCallback(async () => {
         if (!initialMessageSentRef.current) {
             initialMessageSentRef.current = true;
-            await sendMessage("adopte le role de nono le chien");
+            await sendMessage(`adopte le role de WINUAN , la specialiste pour les hommes francais mariées a des chinoises , donnes des bons conseils pour les maries francais `);
         }
     }, []);
 
@@ -49,7 +51,7 @@ const Page = () => {
 
     const setDefaultVideo = () => {
         if (videoRef.current) {
-            videoRef.current.src = "/remidoctortalking.mp4";
+            videoRef.current.src = "/chineseteacher.mp4";
             videoRef.current.load();
             videoRef.current.play().catch(e => console.error("Erreur de lecture vidéo:", e));
         }
@@ -114,7 +116,6 @@ const Page = () => {
     const sendMessage = async (messageText = input) => {
         if (messageText.trim() === '') return;
 
-        // Vérifiez si le message existe déjà pour éviter les doublons
         if (messages.some(msg => msg.role === 'user' && msg.content === messageText)) {
             console.log('Message already sent, skipping...');
             return;
@@ -140,8 +141,11 @@ const Page = () => {
             const assistantMessage = response.data.choices[0].message.content;
             setMessages(prev => [...prev, { role: 'assistant', content: assistantMessage }]);
             
+            // Segmenter la réponse en phrases
+            sentencesRef.current = assistantMessage.match(/[^\.!\?]+[\.!\?]+/g) || [assistantMessage];
+            
             setTimeout(() => {
-                handleSynthesize(assistantMessage);
+                playNextSentence();
             }, 1000);
         } catch (error) {
             console.error('Error:', error);
@@ -151,13 +155,20 @@ const Page = () => {
         }
     };
 
-    const handleSynthesize = async (text) => {
-        try {
-            const audioSrc = await synthesizeAudio(text);
-            await playAudio(audioSrc);
-        } catch (err) {
-            console.error('Error during audio synthesis:', err);
-            setError('Erreur lors de la synthèse audio: ' + err.message);
+    const playNextSentence = async () => {
+        if (sentencesRef.current.length > 0) {
+            const sentence = sentencesRef.current.shift().trim();
+            setCurrentSentence(sentence);
+            try {
+                const audioSrc = await synthesizeAudio(sentence);
+                await playAudio(audioSrc);
+            } catch (err) {
+                console.error('Error during audio synthesis:', err);
+                setError('Erreur lors de la synthèse audio: ' + err.message);
+                playNextSentence(); // Passer à la phrase suivante en cas d'erreur
+            }
+        } else {
+            setDefaultVideo();
         }
     };
 
@@ -180,7 +191,7 @@ const Page = () => {
 
     const playAudio = (audioSrc) => {
         if (videoRef.current) {
-            videoRef.current.src = "/remidoctor.mp4";
+            videoRef.current.src = "/chineseteachertalking.mp4";
             videoRef.current.load();
             videoRef.current.play().catch(e => console.error("Erreur de lecture vidéo:", e));
         }
@@ -190,7 +201,7 @@ const Page = () => {
             format: ['mp3'],
             onend: () => {
                 setIsAudioPlaying(false);
-                setDefaultVideo();
+                playNextSentence(); // Jouer la phrase suivante quand l'audio se termine
             },
             onloaderror: (id, err) => console.error("Howl loading error:", err),
             onplayerror: (id, err) => console.error("Howl play error:", err),
@@ -208,6 +219,7 @@ const Page = () => {
         setDefaultVideo();
         cancelTokenSource.current.cancel('Operation canceled by the user.');
         cancelTokenSource.current = axios.CancelToken.source();
+        sentencesRef.current = []; // Vider les phrases restantes
     };
 
     return (
@@ -241,7 +253,7 @@ const Page = () => {
             </div>
 
             <div className="hidden w-0 md:w-2/3 md:flex flex-col relative">
-                <div className="flex-grow overflow-y-auto py-24 px-4 ">
+                <div className="flex-grow overflow-y-auto py-24 px-4 mb-[200px] ">
                     {messages.map((message, index) => (
                         <div
                             key={index}
@@ -252,6 +264,12 @@ const Page = () => {
                             {message.content}
                         </div>
                     ))}
+                    {currentSentence && (
+                        <div className="whitespace-pre-wrap mb-4" style={{ color: "blue" }}>
+                            <strong>Current: </strong>
+                            {currentSentence}
+                        </div>
+                    )}
                 </div>
 
                 <div className="absolute bottom-20 w-full px-4">
