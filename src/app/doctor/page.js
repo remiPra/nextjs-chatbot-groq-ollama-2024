@@ -124,7 +124,7 @@ const Page = () => {
             await handleSynthesize(assistantMessage);
         } catch (error) {
             console.error('Error:', error);
-            setError('Erreur lors de l du message: ' + error.message);
+            setError('Erreur lors de l\'envoi du message: ' + error.message);
         } finally {
             setIsLoading(false);
         }
@@ -204,24 +204,17 @@ const Page = () => {
                 </video>
 
                 <div className="absolute md:hidden bottom-3 w-full px-4">
-                    <div className="flex justify-center">
-                        {/* <input
-                            className="w-full p-2 border border-gray-300 rounded shadow-xl"
-                            value={input}
-                            placeholder="Dites quelque chose"
-                            onChange={handleInputChange}
-                        /> */}
-                    </div>
                     <div className='flex justify-center mt-4'>
-                        <button
-                            onClick={isRecording ? stopRecording : startRecording}
-                            className=" 2em mx-2 flex justify-center items-center p-2 rounded-full bg-red-900 text-gray-100 focus:outline-none"
-                    >
-                            {isRecording ? <LuMicOff size='4em ' /> : <LuMic size='3em' />}
-                        </button>
-                        {/* <button onClick={() => sendMessage()} className="mx-2 flex justify-center items-center p-4 rounded-full bg-red-900 text-gray-100 focus:outline-none">
-                            <LuSendHorizonal size='2em' />
-                        </button> */}
+                        {!isLoading && !isAudioPlaying && (
+                            <button
+                                onClick={isRecording ? stopRecording : startRecording}
+                                className={`2em mx-2 flex justify-center items-center p-2 rounded-full ${
+                                    isRecording ? 'bg-red-600 animate-pulse' : 'bg-red-900'
+                                } text-gray-100 focus:outline-none transition-colors duration-300`}
+                            >
+                                {isRecording ? <LuMicOff size='4em ' /> : <LuMic size='3em' />}
+                            </button>
+                        )}
                         <button onClick={handleStopAudio} 
                         className="mx-2 flex justify-center items-center p-2 rounded-full bg-red-900 text-gray-100 focus:outline-none">
                         Stop
@@ -231,7 +224,7 @@ const Page = () => {
             </div>
 
             <div className="hidden w-0 md:w-2/3 md:flex flex-col relative">
-                <div className="flex-grow overflow-y-auto py-24 px-4 ">
+                <div className="flex-grow mb-[200px] overflow-y-auto py-24 px-4 ">
                     {messages.map((message, index) => (
                         <div
                             key={index}
@@ -251,19 +244,28 @@ const Page = () => {
                             value={input}
                             placeholder="Dites quelque chose"
                             onChange={handleInputChange}
+                            disabled={isLoading || isAudioPlaying}
                         />
                     </div>
                     <div className='flex justify-center mt-4'>
-                        <button
-                            onClick={isRecording ? stopRecording : startRecording}
-                            className="mx-2 flex justify-center items-center p-2 rounded-full bg-red-900 text-gray-100 focus:outline-none"
-                        >
-                            {isRecording ? <LuMicOff size='2em' /> : <LuMic size='2em' />}
-                        </button>
-                        <button onClick={() => sendMessage()} className="mx-2 flex justify-center items-center p-2 rounded-full bg-red-900 text-gray-100 focus:outline-none">
-                            <LuSendHorizonal size='2em' />
-                        </button>
-                        
+                        {!isLoading && !isAudioPlaying && (
+                            <>
+                                <button
+                                    onClick={isRecording ? stopRecording : startRecording}
+                                    className={`mx-2 flex justify-center items-center p-2 rounded-full ${
+                                        isRecording ? 'bg-red-600 animate-pulse' : 'bg-red-900'
+                                    } text-gray-100 focus:outline-none transition-colors duration-300`}
+                                >
+                                    {isRecording ? <LuMicOff size='2em' /> : <LuMic size='2em' />}
+                                </button>
+                                <button 
+                                    onClick={() => sendMessage()} 
+                                    className="mx-2 flex justify-center items-center p-2 rounded-full bg-red-900 text-gray-100 focus:outline-none"
+                                >
+                                    <LuSendHorizonal size='2em' />
+                                </button>
+                            </>
+                        )}
                     </div>
                 </div>
 

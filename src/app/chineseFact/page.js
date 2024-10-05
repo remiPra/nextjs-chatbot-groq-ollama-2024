@@ -14,12 +14,17 @@ const Page = () => {
     const [audioBlob, setAudioBlob] = useState(null);
     const [currentSentence, setCurrentSentence] = useState('');
 
+    const [showLoader, setShowLoader] = useState(false);
+    const [isAudioSession, setIsAudioSession] = useState(false);
+
     const videoRef = useRef(null);
     const cancelTokenSource = useRef(axios.CancelToken.source());
     const mediaRecorderRef = useRef(null);
     const howlRef = useRef(null);
     const initialMessageSentRef = useRef(false);
     const sentencesRef = useRef([]);
+    const buttonClass = "mx-2 flex justify-center items-center p-4 rounded-full bg-red-900 text-gray-100 focus:outline-none text-xl font-bold";
+    const stopButtonClass = `${buttonClass} text-2xl px-6`;
 
     const apiKey = process.env.NEXT_PUBLIC_TEXT_SPEECH_GOOGLE;
 
@@ -41,7 +46,12 @@ const Page = () => {
     const sendInitialMessage = useCallback(async () => {
         if (!initialMessageSentRef.current) {
             initialMessageSentRef.current = true;
-            await sendMessage(`adopte le role de WINUAN , la specialiste pour les hommes francais mariées a des chinoises , donnes des bons conseils pour les maries francais `);
+            await sendMessage(`
+                adopte le role de WINUAN , 
+                la specialiste pour les hommes francais mariées a des chinoises , 
+                donnes des bons conseils pour les maries francais.
+                fais des phrases de moins de 20 mots.
+                si tu as compris décris toi comme ceci : bonjour je suis la pour vous aider mari francais  `);
         }
     }, []);
 
@@ -122,6 +132,7 @@ const Page = () => {
         }
 
         setIsLoading(true);
+        setShowLoader(true)
         try {
             const newMessage = { role: 'user', content: messageText };
             const updatedMessages = [...messages, newMessage];
@@ -140,10 +151,12 @@ const Page = () => {
 
             const assistantMessage = response.data.choices[0].message.content;
             setMessages(prev => [...prev, { role: 'assistant', content: assistantMessage }]);
-            
+
             // Segmenter la réponse en phrases
             sentencesRef.current = assistantMessage.match(/[^\.!\?]+[\.!\?]+/g) || [assistantMessage];
-            
+
+            setIsAudioSession(true); // Démarrer la session audio
+
             setTimeout(() => {
                 playNextSentence();
             }, 1000);
@@ -152,9 +165,16 @@ const Page = () => {
             setError('Erreur lors de l\'envoi du message: ' + error.message);
         } finally {
             setIsLoading(false);
+            setShowLoader(false); // Désactiver le loader
         }
     };
 
+
+    const Loader = () => (
+        <div className="flex justify-center items-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        </div>
+    );
     const playNextSentence = async () => {
         if (sentencesRef.current.length > 0) {
             const sentence = sentencesRef.current.shift().trim();
@@ -169,6 +189,8 @@ const Page = () => {
             }
         } else {
             setDefaultVideo();
+            setIsAudioSession(false); // Terminer la session audio
+            setIsAudioPlaying(false); // S'assurer que isAudioPlaying est aussi réinitialisé
         }
     };
 
@@ -195,6 +217,8 @@ const Page = () => {
             videoRef.current.load();
             videoRef.current.play().catch(e => console.error("Erreur de lecture vidéo:", e));
         }
+        setIsAudioPlaying(true);
+        setIsAudioSession(true); // S'assurer que isAudioSession est toujours vrai pendant la lecture
 
         howlRef.current = new Howl({
             src: [audioSrc],
@@ -208,7 +232,6 @@ const Page = () => {
         });
 
         howlRef.current.play();
-        setIsAudioPlaying(true);
     };
 
     const handleStopAudio = () => {
@@ -216,6 +239,7 @@ const Page = () => {
             howlRef.current.stop();
         }
         setIsAudioPlaying(false);
+        setIsAudioSession(false); // Réinitialiser isAudioSession
         setDefaultVideo();
         cancelTokenSource.current.cancel('Operation canceled by the user.');
         cancelTokenSource.current = axios.CancelToken.source();
@@ -238,16 +262,27 @@ const Page = () => {
 
                 <div className="absolute md:hidden bottom-3 w-full px-4">
                     <div className='flex justify-center mt-4'>
-                        <button
-                            onClick={isRecording ? stopRecording : startRecording}
-                            className="2em mx-2 flex justify-center items-center p-2 rounded-full bg-red-900 text-gray-100 focus:outline-none"
-                        >
-                            {isRecording ? <LuMicOff size='4em ' /> : <LuMic size='3em' />}
-                        </button>
-                        <button onClick={handleStopAudio} 
-                            className="mx-2 flex justify-center items-center p-2 rounded-full bg-red-900 text-gray-100 focus:outline-none">
-                            Stop
-                        </button>
+                        <div className='flex justify-center mt-4'>
+                            {showLoader ? (
+                                <Loader />
+                            ) : isAudioSession ? (
+                                <button onClick={handleStopAudio} className={stopButtonClass}>
+                                    Stop
+                                </button>
+                            ) : (
+                                <>
+                                    <button
+                                        onClick={isRecording ? stopRecording : startRecording}
+                                        className={buttonClass}
+                                    >
+                                        {isRecording ? <LuMicOff size='3em' /> : <LuMic size='3em' />}
+                                    </button>
+                                    {/* <button onClick={() => sendMessage()} className={buttonClass}>
+                                        <LuSendHorizonal size='3em' />
+                                    </button> */}
+                                </>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -282,15 +317,27 @@ const Page = () => {
                         />
                     </div>
                     <div className='flex justify-center mt-4'>
-                        <button
-                            onClick={isRecording ? stopRecording : startRecording}
-                            className="mx-2 flex justify-center items-center p-2 rounded-full bg-red-900 text-gray-100 focus:outline-none"
-                        >
-                            {isRecording ? <LuMicOff size='2em' /> : <LuMic size='2em' />}
-                        </button>
-                        <button onClick={() => sendMessage()} className="mx-2 flex justify-center items-center p-2 rounded-full bg-red-900 text-gray-100 focus:outline-none">
-                            <LuSendHorizonal size='2em' />
-                        </button>
+                        <div className='flex justify-center mt-4'>
+                            {showLoader ? (
+                                <Loader />
+                            ) : isAudioSession ? (
+                                <button onClick={handleStopAudio} className={stopButtonClass}>
+                                    Stop
+                                </button>
+                            ) : (
+                                <>
+                                    <button
+                                        onClick={isRecording ? stopRecording : startRecording}
+                                        className={buttonClass}
+                                    >
+                                        {isRecording ? <LuMicOff size='3em' /> : <LuMic size='3em' />}
+                                    </button>
+                                    <button onClick={() => sendMessage()} className={buttonClass}>
+                                        <LuSendHorizonal size='3em' />
+                                    </button>
+                                </>
+                            )}
+                        </div>
                     </div>
                 </div>
 
